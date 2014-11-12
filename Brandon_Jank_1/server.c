@@ -4,7 +4,15 @@
  * This is indeed a multi-threaded server.
  */
 
-/* Includes */
+// ================= TODO =================
+// File tracking
+// Actually keep track of clients
+// Actually read from a directory
+// Actually read environmental variables
+// Actually keep logs
+// Logrotate support?
+
+// =============== Includes ===============
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,29 +22,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
-
-/* Defines */
-const char __DEFAULT_SYSTEM_PATH__[] = "/var/run/UCR-UAS/BISON-Transfer/";
-#define BRANDON_DEBUG (1)
-#define MAX_BACKLOG (5)
+#include "BISON-Stuff.h"
 
 /* Terrible global variables */
 int sfd;
 
-/* System critical errors */
-void crit_error(const char *message)
-{
-	perror(message);
-	exit(2);
-}
-
-void error(const char *message)
-{
-	perror(message);
-	exit(1);
-}
-
-/* Connection management */
+// ========= Connection Management =========
 void prepare_connection()
 {
     struct sockaddr_in my_addr;
@@ -45,15 +36,15 @@ void prepare_connection()
 #if BRANDON_DEBUG
     printf("Socketing...\n");
 #endif // if BRANDON_DEBUG
-    sfd = socket(AF_INET, SOCK_STREAM, 0);
+    sfd = socket(PF_INET, SOCK_STREAM, 0);
     if (sfd == -1)
-        crit_error("socket");
+        crit_error("Socket");
 
     // set things for bind
     memset (&my_addr, 0, sizeof(struct sockaddr));
                                             // clear structure
     my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(6673);			// ASCII to decimal BI
+    my_addr.sin_port = htons(BISON_PORT);	// ASCII to decimal BI
 
     // bind
 #if BRANDON_DEBUG
@@ -61,14 +52,14 @@ void prepare_connection()
 #endif // if BRANDON_DEBUG
     if (bind(sfd, (struct sockaddr*) &my_addr, sizeof(struct sockaddr_in))
 			== -1)
-        crit_error("bind");
+        crit_error("Bind Failed");
 
 	// listen for connections
 	if (listen(sfd, MAX_BACKLOG) == -1)
 		crit_error("listen");
 }
 
-/* Listen for and Handle Connections */
+// ========== Connection Handling ==========
 void handle_connection()
 {
 	int pid;
@@ -91,29 +82,40 @@ void handle_connection()
 
 		char* args[] = {"tar", "-cz", "./test/nyan_cat", 0};
 		execvp("tar", args);
+		// included for posterity, not functionality.  exec() will not bring -
+		// us back
 		close(cfd);
 		exit(0);
+	} else {
+		close(cfd);
 	}
 }
 
-/* Signal Handler for SIGINT or SIGTERM */
-// Die nicely!
-void die_nicely(int sig)
+// ======= Nice Termination handler =======
+// terminate nicely!
+void terminate_nicely(int sig)
 {
 	close(sfd);
 	exit(0);
 }
 
-/* A Main Function */
+// ===== Not Nice Termination handler =====
+void error_terminate(const int status) {
+	close(sfd);
+	exit(status);
+}
+
 int main (int argc, char *argv[])
 {
 	printf("Server Starting Up...\n");		/* TODO: Color support ;) */
 
+	// Insert PID file management stuff here
+
 	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
 											// TODO: pay attention to children
 	// Different, pleasant ways to terminate the program
-	signal(SIGTERM, die_nicely);
-	signal(SIGINT, die_nicely);
+	signal(SIGTERM, terminate_nicely);
+	signal(SIGINT, terminate_nicely);
 
 	prepare_connection();
 
