@@ -80,7 +80,7 @@ void handle_connection()
 		// Dup back to the client
 		dup2(cfd, STDOUT_FILENO);
 
-		char* args[] = {"tar", "-cz", "./test/nyan_cat", 0};
+		char* args[] = {"tar", "-hcz", "./test_link/", 0};
 		execvp("tar", args);
 		// included for posterity, not functionality.  exec() will not bring -
 		// us back
