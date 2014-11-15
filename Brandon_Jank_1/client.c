@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
 	my_addr.sin_family = AF_INET;
 	my_addr.sin_port = htons(BISON_PORT);
 	// TODO: Preliminary testing removal, insertion of actual stuff
-	if (!inet_aton(localhost, &my_addr.sin_addr.s_addr))
+	if (!inet_aton("192.168.1.40", &my_addr.sin_addr.s_addr))
 		error("Server Address Invalid");
 
 	// bind
