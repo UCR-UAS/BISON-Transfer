@@ -95,6 +95,7 @@ void handle_connection()
 // terminate nicely!
 void terminate_nicely(int sig)
 {
+	printf("Caught signal %i, terminating nicely.", sig);
 	close(sfd);
 	exit(0);
 }
