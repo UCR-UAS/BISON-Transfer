@@ -3,9 +3,9 @@
 
 // ================ Defines ================
 const char __DEFAULT_SYSTEM_PATH__[] = "/var/run/UCR-UAS/BISON-Transfer/";
-const char localhost[] = "127.0.0.1";
+const char server[] = "127.0.0.1";
 #define BRANDON_DEBUG (1)
-#define MAX_BACKLOG (5)
+#define MAX_BACKLOG (30)
 #define BISON_PORT (6673)					// ascii "BI"
 
 // ============ Error Messages ============

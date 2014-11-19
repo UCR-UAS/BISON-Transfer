@@ -18,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include "BISON-Stuff.h"
 
@@ -49,7 +50,7 @@ int main (int argc, char *argv[])
 	signal(SIGTERM, terminate_nicely);
 	signal(SIGINT, terminate_nicely);
 
-	struct sockaddr_in my_addr;
+	struct sockaddr_in srv_addr;
 
 #if BRANDON_DEBUG
 	printf("Socketing... \n");
@@ -59,24 +60,24 @@ int main (int argc, char *argv[])
 		crit_error("Socket");
 
 	// set things for sockaddr_in before binding
-	memset(&my_addr, 0, sizeof(struct sockaddr_in));
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(BISON_PORT);
+	memset(&srv_addr, 0, sizeof(struct sockaddr_in));
+	srv_addr.sin_family = AF_INET;
+	srv_addr.sin_port = htons(BISON_PORT);
 	// TODO: Preliminary testing removal, insertion of actual stuff
-	if (!inet_aton("192.168.1.40", &my_addr.sin_addr.s_addr))
+	if (!inet_aton("192.168.1.40", (struct in_addr*) &srv_addr.sin_addr.s_addr))
 		error("Server Address Invalid");
 
 	// bind
 #if BRANDON_DEBUG
 	printf("Binding... \n");
 #endif // if BRANDON_DEBUG
-	if (connect(sfd, (struct sockaddr*) &my_addr, sizeof(struct sockaddr_in))
+	if (connect(sfd, (struct sockaddr*) &srv_addr, sizeof(struct sockaddr_in))
 			== -1)
 		crit_error("Connect Failed");
 
 	dup2(sfd, STDIN_FILENO);				// prepare input for tar
 
-	char* args[] = {"tar", "-xz", 0};
+	char* args[] = {"tar", "-x", 0};
 	execvp(args[0], args);
 	// included for posterity, not functionality.  exec() will not bring us -
 	// back
