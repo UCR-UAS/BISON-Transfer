@@ -101,7 +101,8 @@ void terminate_nicely(int sig)
 }
 
 // ===== Not Nice Termination handler =====
-void error_terminate(const int status) {
+void error_terminate(const int status)
+{
 	close(sfd);
 	exit(status);
 }
