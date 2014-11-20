@@ -1,0 +1,13 @@
+transfer2.sh
+
+Use: ./transfer2.sh [SOURCE DIR] [DESTINATION DIR]
+
+Description:
+   Checks for differences between the two directories. Any files found in the 
+   source, but not in the destination will be moved into a directory called 
+   transfer that the script creates. The directory get tared transfer to 
+   destination and un-tared
+   
+To-Do:
+   -Fix file recognition bug
+   -Maybe add parameter to specify how many files to do at once
