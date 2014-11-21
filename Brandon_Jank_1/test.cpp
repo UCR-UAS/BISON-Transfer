@@ -3,7 +3,6 @@
  * spell it?)
  */
 
-#include <glib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/types.h>
@@ -31,13 +30,9 @@ void error_terminate(const int status)
     exit(status);
 }
 
-// TODO: add in error checking for dynamic memory allocation operations
-
 int main ()
 {
     int32_t i;
-    GArray *array;
-    array = g_array_new (FALSE, FALSE, sizeof(struct md5_t));
     struct dirent *dir_ent;
 
     directory = opendir(directory_test);
@@ -55,10 +50,8 @@ int main ()
 		strcpy(temp_md5_struct.name, dir_ent->d_name);
 
 		FILE *fp;
-		c = malloc(sizeof(char [4096]));
-		if (!c)
-			error("Could not malloc()!\n");
-
+		c = new char [4096];				// throws an exception if it -
+											// cannot allocate memory
 		strcpy(c, directory_test);
 		strcat(c, temp_md5_struct.name);
 
@@ -96,6 +89,5 @@ int main ()
     }
 
 
-    g_array_free(array, TRUE);
     return 0;
 }
