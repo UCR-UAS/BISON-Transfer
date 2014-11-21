@@ -1,3 +1,10 @@
+transfer.sh
+
+Use: DONT!
+
+Description
+   Made this just to get stuff out really just use transfer2.sh
+
 transfer2.sh
 
 Use: ./transfer2.sh [SOURCE DIR] [DESTINATION DIR]
