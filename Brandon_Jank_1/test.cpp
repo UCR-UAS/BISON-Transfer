@@ -11,15 +11,12 @@
 #include <string.h>
 #include <errno.h>
 #include <map>
+#include <vector>
+#include <string>
 #include "BISON-Stuff.h"
 #define BRANDON_DEBUGGING 1
 
 const char directory_test[] = "test/";
-
-struct md5_t {
-    unsigned char sum[32];
-    char name[255];
-};
 
 #define MAXBUFLEN (255)
 
@@ -31,71 +28,69 @@ void error_terminate(const int status)
     exit(status);
 }
 
-// TODO: add in error checking for dynamic memory allocation operations
-
 int main ()
 {
-    int32_t i;
-    GArray *array;
-    array = g_array_new (FALSE, FALSE, sizeof(struct md5_t));
+	std::map<std::string, std::vector<unsigned char>> filetable;
     struct dirent *dir_ent;
 
     directory = opendir(directory_test);
     if (!directory)
-        error("Could not open directory.");
+        error("Could not open BISON-Transfer directory");
 
     while ((dir_ent = readdir(directory))) {
-        if (dir_ent->d_type != DT_REG)
+        if (dir_ent->d_type != DT_REG)		// if it is not a file
             continue;
-        struct md5_t temp_md5_struct;
+
+		std::vector<unsigned char> sum;
         char *c;							// sorry I use the same temporary -
 											// for everything.
         if (*dir_ent->d_name == '.')
             continue;
-		strcpy(temp_md5_struct.name, dir_ent->d_name);
+		std::string name(dir_ent->d_name);
 
 		FILE *fp;
-		c = malloc(sizeof(char [4096]));
-		if (!c)
-			error("Could not malloc()!\n");
-
+		c = new char [4096];				// throws an exception if it -
+											// cannot allocate memory
 		strcpy(c, directory_test);
-		strcat(c, temp_md5_struct.name);
+		strcat(c, name.c_str());	// concatenate to full system path
 
-		printf("%s\n", c);					// print the path
+		printf("%s\n", c);					// print the path for debug
 
 		fp = fopen(c, "r");
 		if (!fp)
-			error("Could not open file in directory!\n");
+			error("Could not open file in directory!");
 
 		char buf[MAXBUFLEN + 1];
 
 		MD5_CTX md5_structure;
 		if (!MD5_Init(&md5_structure))
-			error("Could not initialize MD5.\n");
+			error("Could not initialize MD5");
 
 		while (!feof(fp)) {
 			size_t newLen = fread(buf, sizeof(char), MAXBUFLEN, fp);
 			if (!newLen && errno) {
-				error("Could not read from file!");
+				error("Could not read from file");
 			}
 			buf[newLen + 1] = '\0';
-			MD5_Update(&md5_structure, buf, newLen);
-											// TODO
+			if (!MD5_Update(&md5_structure, buf, newLen))
+				error("Could not update MD5 checksum");
 		}
 		fclose(fp);
 
-		MD5_Final(temp_md5_struct.sum, &md5_structure);
-											// TODO
+		if(!MD5_Final(sum.data(), &md5_structure))
+			error("Could not generate final MD5 checksum");
 
+		filetable.insert(std::pair<std::string, std::vector<unsigned char>>
+			(name, sum));
+/*
+Print function can later be used for printing to a file
 		for (i = 0; i < 16; i++)
-			printf("%02x", temp_md5_struct.sum[i]);
+			printf("%02x", sum[i]);
 		putchar('\n');
-
-		free(c);
+*/
+		delete []c;
     }
 
 
-    g_array_free(array, TRUE);
     return 0;
 }
