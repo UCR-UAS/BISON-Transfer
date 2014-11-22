@@ -7,7 +7,11 @@ Description
 
 transfer2.sh
 
-Use: ./transfer2.sh [SOURCE DIR] [DESTINATION DIR]
+Use: transfer2.sh # [SOURCE DIR] [DESTINATION DIR]
+
+   #: optional argument, the amount of files to transfer
+   SOURCE DIR: The directory on the remote machine
+   DESTINATION DIR: The directory on the local machine
 
 Description:
    Checks for differences between the two directories. Any files found in the 
