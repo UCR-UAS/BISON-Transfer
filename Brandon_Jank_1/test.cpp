@@ -3,7 +3,6 @@
  * spell it?)
  */
 
-#include <glib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/types.h>
@@ -11,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <map>
 #include "BISON-Stuff.h"
 #define BRANDON_DEBUGGING 1
 
