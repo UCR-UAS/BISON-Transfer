@@ -13,10 +13,11 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <iostream>
 #include "BISON-Stuff.h"
 #define BRANDON_DEBUGGING 1
 
-const char directory_test[] = "test/";
+const char directory_test[] = "test_old/";
 
 #define MAXBUFLEN (255)
 
@@ -49,7 +50,7 @@ int update_filetable ()
             continue;
 		}
 
-		std::vector<unsigned char> sum;
+		std::vector<unsigned char> sum(16);
         char *c;							// sorry I use the same temporary -
 											// for everything.
 		std::string name(dir_ent->d_name);
@@ -59,8 +60,6 @@ int update_filetable ()
 											// cannot allocate memory
 		strcpy(c, directory_test);
 		strcat(c, name.c_str());	// concatenate to full system path
-
-		printf("%s\n", c);					// print the path for debug
 
 		fp = fopen(c, "r");
 		if (!fp)
@@ -89,14 +88,13 @@ int update_filetable ()
 		filetable.insert(std::pair<std::string, std::vector<unsigned char>>
 			(name, sum));
 /*
-Print function can later be used for printing to a file
-		for (i = 0; i < 16; i++)
+save this for printing things
+		for (int i = 0; i < 16; i++)
 			printf("%02x", sum[i]);
 		putchar('\n');
 */
 		delete []c;
     }
-
 }
 
 int main ()
@@ -105,6 +103,12 @@ int main ()
 	std::map<std::string, std::vector<unsigned char>> filetable;
     struct dirent *dir_ent;
 
-
+	for (std::map<std::string, std::vector<unsigned char>>::iterator 
+		it=filetable.begin(); it != filetable.end(); it++) {
+		for (std::vector<unsigned char>::iterator iter = it->second.begin();
+			iter != it->second.end(); iter++)
+			printf("%02x", *iter);
+		std::cout << "  " << it->first << std::endl;
+	}
     return 0;
 }
