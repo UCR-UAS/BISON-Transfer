@@ -20,32 +20,38 @@ const char directory_test[] = "test/";
 
 #define MAXBUFLEN (255)
 
-DIR *directory;
 
 void error_terminate(const int status)
 {
-    closedir(directory);
     exit(status);
 }
 
-int main ()
+int update_filetable ()
 {
-	std::map<std::string, std::vector<unsigned char>> filetable;
-    struct dirent *dir_ent;
-
+#if BRANDON_DEBUGGING
+	printf("Opening directory...");
+#endif \\ BRANDON_DEBUGGING
     directory = opendir(directory_test);
     if (!directory)
         error("Could not open BISON-Transfer directory");
 
     while ((dir_ent = readdir(directory))) {
-        if (dir_ent->d_type != DT_REG)		// if it is not a file
+        if (dir_ent->d_type != DT_REG) {	// if it is not a file
+#if BRANDON_DEBUGGING
+			printf("Skipped irregular file, %s\n", dir_ent->d_name);
+#endif \\ BRANDON_DEBUGGING
             continue;
+		}
+        if (*dir_ent->d_name == '.') {		// if it has a dot
+#if BRANDON_DEBUGGING
+			printf("Skipped hidden file: %s\n", dir_ent->d_name);
+#endif \\ BRANDON_DEBUGGING
+            continue;
+		}
 
 		std::vector<unsigned char> sum;
         char *c;							// sorry I use the same temporary -
 											// for everything.
-        if (*dir_ent->d_name == '.')
-            continue;
 		std::string name(dir_ent->d_name);
 
 		FILE *fp;
@@ -90,6 +96,14 @@ Print function can later be used for printing to a file
 */
 		delete []c;
     }
+
+}
+
+int main ()
+{
+	DIR *directory;
+	std::map<std::string, std::vector<unsigned char>> filetable;
+    struct dirent *dir_ent;
 
 
     return 0;
