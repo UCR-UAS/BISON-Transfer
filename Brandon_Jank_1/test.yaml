@@ -1,8 +1,5 @@
 %YAML 1.2
 ---
-readme: >
-    This is a sample BISON configuration file written in YAML.  As of this
-    moment, it is only for testing.  Do not use this as an example for your
-    BISON configuration.
-username: Brandon
-password: some_password
+user:
+  username: user
+  password: pass

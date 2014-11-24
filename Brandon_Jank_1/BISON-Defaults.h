@@ -2,11 +2,10 @@
 #define __BISON_STUFF__
 
 // ================ Defines ================
-const char __DEFAULT_SYSTEM_PATH__[] = "/var/run/UCR-UAS/BISON-Transfer/";
-const char server[] = "127.0.0.1";
+const char __CONFIG_PATH__[] = "~/.BISON/config.yaml";
 #define BRANDON_DEBUG (1)
 #define MAX_BACKLOG (30)
-#define BISON_PORT (6673)					// ascii "BI"
+#define BISON_TRANSFER_PORT (6673)			// ascii "BI"
 
 // ============ Error Messages ============
 extern void error_terminate(const int);

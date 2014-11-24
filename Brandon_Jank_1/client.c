@@ -20,7 +20,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
-#include "BISON-Stuff.h"
+#include "BISON-Defaults.h"
 
 // =========== Global Variables ===========
 int sfd;
@@ -62,7 +62,7 @@ int main (int argc, char *argv[])
 	// set things for sockaddr_in before binding
 	memset(&srv_addr, 0, sizeof(struct sockaddr_in));
 	srv_addr.sin_family = AF_INET;
-	srv_addr.sin_port = htons(BISON_PORT);
+	srv_addr.sin_port = htons(BISON_TRANSFER_PORT);
 	// TODO: Preliminary testing removal, insertion of actual stuff
 	if (!inet_aton("192.168.1.40", (struct in_addr*) &srv_addr.sin_addr.s_addr))
 		error("Server Address Invalid");

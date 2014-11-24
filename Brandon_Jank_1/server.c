@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
-#include "BISON-Stuff.h"
+#include "BISON-Defaults.h"
 
 /* Terrible global variables */
 int sfd;
@@ -44,7 +44,7 @@ void prepare_connection()
     memset (&my_addr, 0, sizeof(struct sockaddr));
                                             // clear structure
     my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(BISON_PORT);	// ASCII to decimal BI
+    my_addr.sin_port = htons(BISON_TRANSFER_PORT);
 
     // bind
 #if BRANDON_DEBUG
