@@ -8,7 +8,7 @@
 // File tracking
 // Actually keep track of clients
 // Actually read from a directory
-// Actually read environmental variables
+// Actually read configuration files
 // Actually keep logs
 // Logrotate support?
 

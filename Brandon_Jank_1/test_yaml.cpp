@@ -37,7 +37,7 @@ int main ()
 #endif // BRANDON_DEBUG
 
 	std::ofstream fout("test.yaml");
-	fout << "%YAML 1.2\n" << "---\n";
+	fout << "%YAML 1.2\n" << "---\n";		// Insert version string.
 	fout << config;
 	return 0;
 }
