@@ -1,11 +1,22 @@
 #ifndef __BISON_STUFF__
 #define __BISON_STUFF__
+#include <string>
+
+/*
+ * This file definitely needs to be changed once the distributed version is
+ * ready.
+ */
 
 // ================ Defines ================
-const char __CONFIG_PATH__[] = "~/.BISON/config.yaml";
-#define BRANDON_DEBUG (1)
-#define MAX_BACKLOG (30)
-#define BISON_TRANSFER_PORT (6673)			// ascii "BI"
+const char __DEF_SERVER_CONFIG_PATH__[]
+	= "/home/brandon/.BISON/transfer_server_config.yaml";
+const char __DEF_CLIENT_CONFIG_PATH__[]
+	= "/home/brandon/.BISON/transfer_client_config.yaml";
+#define DEBUG (1)
+#define DEF_MAX_BACKLOG (30)
+#define DEF_BISON_TRANSFER_PORT (6673)		// ascii "BI"
+#define DEF_BISON_TRANSFER_SERVER ("127.0.0.1")
+#define DEF_BISON_TRANSFER_BIND ("0.0.0.0")
 
 // ============ Error Messages ============
 extern void error_terminate(const int);

@@ -50,7 +50,7 @@ with the configuration daemon to regenerate configuration files for the server.
 After the configuration daemon is done regenerating the files, it will tell the
 transfer server daemon to reload its files.
 
-TODO List (by order of implemenatation)
+TODO List (by order of implementation)
 ---------------------------------------
  * YAML configuration reading / writing (test done in separate file)
  * MD5 generation (test done in separate file)

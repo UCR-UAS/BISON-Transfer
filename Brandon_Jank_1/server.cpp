@@ -5,27 +5,66 @@
  */
 
 // ================= TODO =================
+// Actually read configuration files
 // File tracking
 // Actually keep track of clients
-// Actually read from a directory
-// Actually read configuration files
-// Actually keep logs
-// Logrotate support?
+// Actually log and -HUP support
 
 // =============== Includes ===============
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
+#include <string>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <errno.h>
+#include <yaml-cpp/yaml.h>
+#include <fstream>
+#include <exception>
+#include <string.h>
 #include "BISON-Defaults.h"
 
 /* Terrible global variables */
 int sfd;
+int MAX_BACKLOG;
+std::string BISON_TRANSFER_ADDRESS;
+int BISON_TRANSFER_PORT;
+
+// ============ Configuration ==============
+void configure_server(YAML::Node &config)
+{
+	try {
+		config = YAML::LoadFile(__DEF_SERVER_CONFIG_PATH__);
+#if DEBUG
+		std::cout << "Successfully opened configuration file." << std::endl;
+#endif // DEBUG
+	} catch (std::exception& e) {
+		std::cerr << e.what() << std::endl;
+		std::cerr << "Attempting to configure automatically." << std::endl;
+	}
+
+	if (!config["BISON-Transfer"]["Server"]["Bind-address"])
+		config["BISON-Transfer"]["Server"]["Bind-address"] 
+			= DEF_BISON_TRANSFER_BIND;
+	if (!config["BISON-Transfer"]["Server"]["Port"])
+		config["BISON-Transfer"]["Server"]["Port"] = DEF_BISON_TRANSFER_PORT;
+	if (!config["BISON-Transfer"]["Server"]["Max-Backlog"])
+		config["BISON-Transfer"]["Server"]["Max-Backlog"] = DEF_MAX_BACKLOG;
+
+	BISON_TRANSFER_ADDRESS
+		= config["BISON-Transfer"]["Server"]["Bind-address"].as<std::string>();
+	BISON_TRANSFER_PORT = config["BISON-Transfer"]["Server"]["Port"].as<int>();
+	MAX_BACKLOG = config["BISON-Transfer"]["Server"]["Max-Backlog"].as<int>();
+
+	if (DEBUG) {
+		std::cout << "Transfer Address (for binding): "
+			<< BISON_TRANSFER_ADDRESS << std::endl;
+		std::cout << "Transfer port: " << BISON_TRANSFER_PORT << std::endl;
+		std::cout << "Max Backlog: " << MAX_BACKLOG << std::endl;
+	}
+}
 
 // ========= Connection Management =========
 void prepare_connection()
@@ -80,7 +119,7 @@ void handle_connection()
 		// Dup back to the client
 		dup2(cfd, STDOUT_FILENO);
 
-		char* args[] = {"tar", "-hcz", "./test_link/", 0};
+		char* const args[] = {"tar", "-hcz", "./test/", 0};
 		execvp("tar", args);
 		// included for posterity, not functionality.  exec() will not bring -
 		// us back
@@ -95,7 +134,7 @@ void handle_connection()
 // terminate nicely!
 void terminate_nicely(int sig)
 {
-	printf("Caught signal %i, terminating nicely.", sig);
+	printf("Caught signal %i, terminating nicely.\n", sig);
 	close(sfd);
 	exit(0);
 }
@@ -109,6 +148,9 @@ void error_terminate(const int status)
 
 int main (int argc, char *argv[])
 {
+	YAML::Node config;
+	configure_server(config);
+
 	printf("Server Starting Up...\n");		/* TODO: Color support ;) */
 
 	// Insert PID file management stuff here
@@ -125,5 +167,9 @@ int main (int argc, char *argv[])
 	while (1) {
 		handle_connection();
 	}
+
+	std::ofstream fout(__DEF_SERVER_CONFIG_PATH__);
+	fout << "%YAML 1.2\n" << "---\n";		// version string
+	fout << config;
 	return 0;
 }
