@@ -1,0 +1,24 @@
+transfer.sh
+
+Use: DONT!
+
+Description
+   Made this just to get stuff out really just use transfer2.sh
+
+transfer2.sh
+
+Use: transfer2.sh # [SOURCE DIR] [DESTINATION DIR]
+
+   #: optional argument, the amount of files to transfer
+   SOURCE DIR: The directory on the remote machine
+   DESTINATION DIR: The directory on the local machine
+
+Description:
+   Checks for differences between the two directories. Any files found in the 
+   source, but not in the destination will be moved into a directory called 
+   transfer that the script creates. The directory get tared transfer to 
+   destination and un-tared
+   
+To-Do:
+   -Fix file recognition bug
+   -Maybe add parameter to specify how many files to do at once
