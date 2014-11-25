@@ -23,6 +23,7 @@
 #include <string>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
+#include <boost/filesystem.hpp>
 #include "BISON-Defaults.h"
 
 // =========== Global Variables ===========
@@ -31,10 +32,11 @@ std::string BISON_TRANSFER_SERVER;
 int BISON_TRANSFER_PORT;
 
 // ============ Configuration ==============
-void configure_server(YAML::Node &config)
+void configure_client(YAML::Node &config)
 {
 	try {
-		config = YAML::LoadFile(__DEF_CLIENT_CONFIG_PATH__);
+		config = YAML::LoadFile(__DEF_CLIENT_CONFIG_PATH__ 
+			+ std::string(__DEF_CLIENT_CONFIG_FILE__));
 #if DEBUG
 		std::cout << "Successfully opened configuration file." << std::endl;
 #endif // DEBUG
@@ -78,7 +80,7 @@ void error_terminate(const int status) {
 int main (int argc, char *argv[])
 {
 	YAML::Node config;
-	configure_server(config);
+	configure_client(config);
 	printf("Client Starting Up...\n");
 
 	// Insert PID file management stuff here
@@ -118,7 +120,16 @@ int main (int argc, char *argv[])
 	std::cout << "Writing config file" << std::endl;
 #endif // if DEBUG
 
-	std::ofstream fout(__DEF_CLIENT_CONFIG_PATH__);
+	// Write out the configuration before starting 
+	boost::filesystem::path dir(__DEF_CLIENT_CONFIG_PATH__);
+	if (!boost::filesystem::exists(dir)) {
+		std::cerr << "Configuration directory does not exist.  Creating..."
+			<< std::flush;
+		if (boost::filesystem::create_directories(dir))
+			std::cout << "Created." << std::endl;
+	}
+	std::ofstream fout(__DEF_CLIENT_CONFIG_PATH__
+		+ std::string(__DEF_CLIENT_CONFIG_FILE__));
 	fout << "%YAML 1.2\n" << "---\n";
 	fout << config;
 

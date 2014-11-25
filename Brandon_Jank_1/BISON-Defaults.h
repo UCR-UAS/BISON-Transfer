@@ -8,10 +8,10 @@
  */
 
 // ================ Defines ================
-const char __DEF_SERVER_CONFIG_PATH__[]
-	= "/home/brandon/.BISON/transfer_server_config.yaml";
-const char __DEF_CLIENT_CONFIG_PATH__[]
-	= "/home/brandon/.BISON/transfer_client_config.yaml";
+const char __DEF_SERVER_CONFIG_PATH__[] = "/home/brandon/.BISON/";
+const char __DEF_SERVER_CONFIG_FILE__[] = "transfer_server_config.yaml";
+const char __DEF_CLIENT_CONFIG_PATH__[] = "/home/brandon/.BISON/";
+const char __DEF_CLIENT_CONFIG_FILE__[] = "transfer_client_config.yaml";
 #define DEBUG (1)
 #define DEF_MAX_BACKLOG (30)
 #define DEF_BISON_TRANSFER_PORT (6673)		// ascii "BI"

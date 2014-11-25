@@ -24,6 +24,7 @@
 #include <fstream>
 #include <exception>
 #include <string.h>
+#include <boost/filesystem.hpp>
 #include "BISON-Defaults.h"
 
 /* Terrible global variables */
@@ -36,7 +37,8 @@ int BISON_TRANSFER_PORT;
 void configure_server(YAML::Node &config)
 {
 	try {
-		config = YAML::LoadFile(__DEF_SERVER_CONFIG_PATH__);
+		config = YAML::LoadFile(__DEF_SERVER_CONFIG_PATH__
+			+ std::string(__DEF_SERVER_CONFIG_FILE__));
 #if DEBUG
 		std::cout << "Successfully opened configuration file." << std::endl;
 #endif // DEBUG
@@ -157,6 +159,20 @@ int main (int argc, char *argv[])
 
 	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
 											// TODO: pay attention to children
+	// Write out the configuration before starting 
+	boost::filesystem::path dir(__DEF_SERVER_CONFIG_PATH__);
+	if (!boost::filesystem::exists(dir)) {
+		std::cerr << "Configuration directory does not exist.  Creating..."
+			<< std::flush;
+		if (boost::filesystem::create_directories(dir))
+			std::cout << "Created." << std::endl;
+	}
+	std::ofstream fout(__DEF_SERVER_CONFIG_PATH__ 
+		+ std::string(__DEF_SERVER_CONFIG_FILE__));
+	fout << "%YAML 1.2\n" << "---\n";		// version string
+	fout << config;
+	fout.close();
+
 	// Different, pleasant ways to terminate the program
 	signal(SIGTERM, terminate_nicely);
 	signal(SIGINT, terminate_nicely);
@@ -168,8 +184,5 @@ int main (int argc, char *argv[])
 		handle_connection();
 	}
 
-	std::ofstream fout(__DEF_SERVER_CONFIG_PATH__);
-	fout << "%YAML 1.2\n" << "---\n";		// version string
-	fout << config;
 	return 0;
 }
