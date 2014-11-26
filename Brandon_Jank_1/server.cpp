@@ -25,6 +25,7 @@
 #include <exception>
 #include <string.h>
 #include <boost/filesystem.hpp>
+#include <ucontext.h>
 #include "BISON-Defaults.h"
 
 /* Terrible global variables */
@@ -32,6 +33,8 @@ int sfd;
 int MAX_BACKLOG;
 std::string BISON_TRANSFER_ADDRESS;
 int BISON_TRANSFER_PORT;
+int argC;
+char **argV;
 
 // ============ Configuration ==============
 void configure_server(YAML::Node &config)
@@ -117,17 +120,16 @@ void handle_connection()
 	pid = fork();
 	if (pid == -1)
 		error("Fork");
-	if (pid == 0) {
-		// Dup back to the client
-		dup2(cfd, STDOUT_FILENO);
+	if (pid == 0) {							// we are the child.
+		// Tell the client what they're getting
+		const char *file_name = "nyan.cat";
+		dprintf(cfd, "SENDING: %s\n\n", file_name);
 
-		char* const args[] = {"tar", "-hcz", "./test/", 0};
-		execvp("tar", args);
-		// included for posterity, not functionality.  exec() will not bring -
-		// us back
+		dprintf(cfd, "Nyans and cats.\n");
+
 		close(cfd);
 		exit(0);
-	} else {
+	} else {								// we are the parent
 		close(cfd);
 	}
 }
@@ -150,15 +152,17 @@ void error_terminate(const int status)
 
 int main (int argc, char *argv[])
 {
+	signal(SIGTERM, terminate_nicely);
+	signal(SIGINT, terminate_nicely);
+	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
+											// TODO: pay attention to children
 	YAML::Node config;
 	configure_server(config);
 
-	printf("Server Starting Up...\n");		/* TODO: Color support ;) */
+	printf("Server Starting Up...\n");
 
 	// Insert PID file management stuff here
 
-	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
-											// TODO: pay attention to children
 	// Write out the configuration before starting 
 	boost::filesystem::path dir(__DEF_SERVER_CONFIG_PATH__);
 	if (!boost::filesystem::exists(dir)) {
@@ -172,10 +176,6 @@ int main (int argc, char *argv[])
 	fout << "%YAML 1.2\n" << "---\n";		// version string
 	fout << config;
 	fout.close();
-
-	// Different, pleasant ways to terminate the program
-	signal(SIGTERM, terminate_nicely);
-	signal(SIGINT, terminate_nicely);
 
 	prepare_connection();
 

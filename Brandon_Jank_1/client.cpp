@@ -133,6 +133,28 @@ int main (int argc, char *argv[])
 	fout << "%YAML 1.2\n" << "---\n";
 	fout << config;
 
+	int since_last_newline = -1;
+	while(1) {
+		char c;
+		if(!read(sfd, &c, 1)) {
+			std::cerr << "Could not read from file descriptor.Is this the end?" 
+				<< std::endl;
+			exit(1);
+		}
+		if (c == '\n') {
+			printf("%d\n", since_last_newline);
+			putchar(c);
+			if (since_last_newline == 0) {
+				break;
+			} else {
+				++since_last_newline;
+				continue;
+			}
+		}
+		since_last_newline = -1;
+		putchar(c);
+	}
+
 	dup2(sfd, STDIN_FILENO);				// prepare input for tar
 
 	char* args[] = {"tar", "-xz", 0};

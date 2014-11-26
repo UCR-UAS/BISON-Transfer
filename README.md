@@ -52,7 +52,7 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * YAML configuration reading / writing (test done in separate file)
+ * Individual file transfer(not done, should be done in server)
  * MD5 generation (test done in separate file)
  * Client tracking (multiple clients?) (test not done, should be done in server)
  * -HUP reload (test not done, should be done in server)
