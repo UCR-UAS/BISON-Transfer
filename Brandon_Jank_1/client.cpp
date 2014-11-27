@@ -134,33 +134,69 @@ int main (int argc, char *argv[])
 	fout << config;
 
 	int since_last_newline = -1;
+    int count = 0;
+    std::string filename;
+	char c;
 	while(1) {
-		char c;
 		if(!read(sfd, &c, 1)) {
 			std::cerr << "Could not read from file descriptor.Is this the end?" 
 				<< std::endl;
 			exit(1);
 		}
 		if (c == '\n') {
-			printf("%d\n", since_last_newline);
-			putchar(c);
 			if (since_last_newline == 0) {
 				break;
 			} else {
 				++since_last_newline;
 				continue;
 			}
-		}
-		since_last_newline = -1;
-		putchar(c);
+		} else if (count == 0 && c == 'S') {
+            ++count;
+            continue;
+        } else if (count == 1 && c == 'E') {
+            ++count;
+            continue;
+        } else if (count == 2 && c == 'N') {
+            ++count;
+            continue;
+        } else if (count == 3 && c == 'D') {
+            ++count;
+            continue;
+        } else if (count == 4 && c == 'I') {
+            ++count;
+            continue;
+        } else if (count == 5 && c == 'N') {
+            ++count;
+            continue;
+        } else if (count == 6 && c == 'G') {
+            ++count;
+            continue;
+        } else if (count == 7 && c == ':') {
+            ++count;
+            continue;
+        } else if (count == 8 && c == ' ') {
+            ++count;
+            continue;
+        } else if (count <= 8){
+            std::cerr << "Incorrect sequence detected!" << std::endl;
+            exit(1);
+        } else {
+            filename.push_back(c);
+		    since_last_newline = -1;
+        }
 	}
 
-	dup2(sfd, STDIN_FILENO);				// prepare input for tar
+    std::cout << "output file" << std::endl;
+    FILE *output_file = fopen(filename.c_str(), "w");
+    if (output_file == 0)
+        error("Could not open new file for writing.");
 
-	char* args[] = {"tar", "-xz", 0};
-	execvp(args[0], args);
-	// included for posterity, not functionality.  exec() will not bring us -
-	// back
+    while(read(sfd, &c, 1)) {
+        fputc(c, output_file);
+    }
+
+    fclose(output_file);
+
 	close(sfd);
 	return 0;
 }
