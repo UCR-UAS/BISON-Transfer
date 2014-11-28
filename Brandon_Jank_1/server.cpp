@@ -22,6 +22,7 @@
 #include <map>
 #include <netinet/in.h>
 #include <openssl/md5.h>
+#include <queue>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,16 +34,26 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
-/* Terrible global variables */
+enum action_t {FILETABLE, TRANSFER, REALTIME};
+
+// =============== Structs =================
+struct child_struct_t {
+    int pipe;
+    enum action_t status;
+};
+
+// ===== Terrible global variables  ========
 int sfd;
 int MAX_BACKLOG;
 std::string BISON_TRANSFER_ADDRESS;
 int BISON_TRANSFER_PORT;
 std::string BISON_TRANSFER_DIR;
-int transmitMode;
+enum action_t transmitMode;
 int argC;
 char **argV;
-std::list<int> pipe_back;
+std::list<child_struct_t*> pipe_back;
+std::map<std::string, std::vector<unsigned char>> filetable;
+std::queue<std::string> filequeue;
 
 // ============ Configuration ==============
 void configure_server(YAML::Node &config)
@@ -136,6 +147,7 @@ void handle_connection()
 	}
 
 	// piping stuff here
+    printf("Piping!\n");
 	int pipefd[2];
 	if (pipe(pipefd) == -1)
 		crit_error("Could not pipe");
@@ -147,35 +159,67 @@ void handle_connection()
 		close(pipefd[0]);					// child writes to pipe, close read
 		// Tell the client what they're getting
 		switch (transmitMode) {
-			case 0:							// ask for filetable
+			case FILETABLE:					// ask for filetable
 			{
 				dprintf(cfd, "FTREQ\n\n");
-				char buf[MAXBUFLEN + 1];
-				int len = 0;
 				printf("Recieving filetable\n");
-				dup2(cfd, pipefd[0]);
+				dup2(cfd, pipefd[1]);
+                printf("Duped file descriptors.\n");
 			}
 			break;
-			case 1:							// send next queued file
+			case TRANSFER:					// send next queued file
+            {
 				const char *file_name = "nyan.cat";
 				dprintf(cfd, "SENDING: %s\n\n", file_name);
-
 				dprintf(cfd, "Nyans and cats.\n");
+            }
 			break;
+            case REALTIME:
+
+            break;
 		}
-		close(cfd);
+        printf("Closing client file descriptor.\n");
+		close(pipefd[1]);
+        printf("Exiting.\n");
 		exit(0);
 	} else {								// we are the parent
+        printf("Parent handling child process stuff.\n");
 		close(pipefd[1]);					// parent reads from pipe, close w
 		close(cfd);
-		pipe_back.push_back(pipefd[0]);
+        struct child_struct_t *child_struct = new struct child_struct_t;
+        std::cout << "Struct created: " <<(void*) child_struct << std::endl;
+        child_struct->pipe = pipefd[0];
+        printf("Pipe: %d\n", pipefd[0]);
+        child_struct->status = transmitMode;
+        // temporarily set our file transfer on... this is to be removed later.
+        if (transmitMode == FILETABLE)
+            transmitMode = TRANSFER;
+        /* 
+        remove next file.
+        if there are no more files to be transferred, switch to filetable.
+         */
+        pipe_back.push_back(child_struct);
+        printf("Exiting function.\n");
 	}
 }
 
 // =========== Child Handling =============
 void handle_children()
 {
-	
+    char c;
+    for (std::list<child_struct_t*>::iterator it = pipe_back.begin();
+            it != pipe_back.end() && (*it); ++it) {
+                                            // using a (*it) to find out when -
+                                            // iterator dereferences to zero
+        printf("%d\n", (*it)->pipe);
+        while (read((*it)->pipe, &c, 1) != 0) {
+            putchar(c);
+        }
+        close((*it)->pipe);
+        delete (*it);
+        pipe_back.erase(it);
+    }
+
 }
 // ======= Nice Termination handler =======
 // terminate nicely!
@@ -195,7 +239,7 @@ void error_terminate(const int status)
 
 int main (int argc, char *argv[])
 {
-	transmitMode = 0;						// ask for filetable from client
+	transmitMode = FILETABLE;				// ask for filetable from client
 
 	signal(SIGTERM, terminate_nicely);
 	signal(SIGINT, terminate_nicely);
