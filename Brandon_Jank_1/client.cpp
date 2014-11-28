@@ -303,7 +303,7 @@ int main (int argc, char *argv[])
             ++count;
 			action = RECIEVE;
             continue;
-        } else if (action != RECIEVE) {
+        } else if (action == RECIEVE) {
             filename.push_back(c);
 		    since_last_newline = -1;
         } else {
@@ -321,7 +321,8 @@ int main (int argc, char *argv[])
 #if DEBUG
 			std::cout << "output file: " << filename << std::endl;
 #endif // if DEBUG
-			FILE *output_file = fopen(filename.c_str(), "w");
+			FILE *output_file = fopen((BISON_RECIEVE_DIR + filename).c_str()
+				, "w");
 			if (output_file == 0)
 				error("Could not open new file for writing.");
 
