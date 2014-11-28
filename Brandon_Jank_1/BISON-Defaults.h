@@ -10,13 +10,16 @@
 // ================ Defines ================
 const char __DEF_SERVER_CONFIG_PATH__[] = "/home/brandon/.BISON/";
 const char __DEF_SERVER_CONFIG_FILE__[] = "transfer_server_config.yaml";
+const char DEF_TRANSMIT_DIR[] = "/home/brandon/.BISON/transmit/";
 const char __DEF_CLIENT_CONFIG_PATH__[] = "/home/brandon/.BISON/";
 const char __DEF_CLIENT_CONFIG_FILE__[] = "transfer_client_config.yaml";
+const char DEF_RECIEVE_DIR[] = "/home/brandon/.BISON/recieve/";
 #define DEBUG (1)
 #define DEF_MAX_BACKLOG (30)
 #define DEF_BISON_TRANSFER_PORT (6673)		// ascii "BI"
 #define DEF_BISON_TRANSFER_SERVER ("127.0.0.1")
 #define DEF_BISON_TRANSFER_BIND ("0.0.0.0")
+#define MAXBUFLEN (255)
 
 // ============ Error Messages ============
 extern void error_terminate(const int);

@@ -32,15 +32,15 @@ std::vector<unsigned char>> &filetable)
 	struct dirent *dir_ent;
     while ((dir_ent = readdir(directory))) {
         if (dir_ent->d_type != DT_REG) {	// if it is not a file
-#if BRANDON_DEBUG
+#if DEBUG
 			printf("Skipped irregular file, %s\n", dir_ent->d_name);
-#endif // BRANDON_DEBUG
+#endif // DEBUG
             continue;
 		}
         if (*dir_ent->d_name == '.') {		// if it has a dot
-#if BRANDON_DEBUG
+#if DEBUG
 			printf("Skipped hidden file: %s\n", dir_ent->d_name);
-#endif // BRANDON_DEBUG
+#endif // DEBUG
             continue;
 		}
 
@@ -51,9 +51,9 @@ std::vector<unsigned char>> &filetable)
 
 		strcpy(c, directory_test);
 		strcat(c, name.c_str());	// concatenate to full system path
-#if BRANDON_DEBUG
+#if DEBUG
 		printf("Processing File: %s\n", c);
-#endif // BRANDON_DEBUG
+#endif // DEBUG
 
 		FILE *fp = fopen(c, "r");
 		if (!fp)
@@ -91,9 +91,9 @@ int main ()
 	DIR *directory;
 	std::map<std::string, std::vector<unsigned char>> filetable;
 
-#if BRANDON_DEBUG
+#if DEBUG
 	printf("Opening directory...\n");
-#endif // BRANDON_DEBUG
+#endif // DEBUG
     directory = opendir(directory_test);
     if (!directory)
         error("Could not open BISON-Transfer directory");
