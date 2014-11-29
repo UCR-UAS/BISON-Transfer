@@ -52,7 +52,8 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * Generated MD5 parsing (almost implemented.)
  * Client code cleanup
- * Better client housekeeping (circular buffers and insanity, anyone?)
+ * Update tables as an external file
+ * Improved update filetables housekeeping
+ * Better client housekeeping (nonblocking functions, anyone?)
  * -HUP reload (test not done, should be done in server)
