@@ -13,6 +13,7 @@
 
 // =============== Includes ===============
 #include "BISON-Defaults.h"
+#include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
 #include <dirent.h>
 #include <errno.h>
@@ -40,6 +41,7 @@ enum action_t {FILETABLE, TRANSFER, REALTIME};
 struct child_struct_t {
     int pipe;
     enum action_t status;
+	boost::circular_buffer_space_optimized<char> buffer;
 };
 
 // ===== Terrible global variables  ========
@@ -62,15 +64,15 @@ std::vector<unsigned char>> &filetable)
 	struct dirent *dir_ent;
     while ((dir_ent = readdir(directory))) {
         if (dir_ent->d_type != DT_REG) {	// if it is not a file
-#if DEBUG
+#if DEBUG_FILETABLE
 			printf("Skipped irregular file, %s\n", dir_ent->d_name);
-#endif // DEBUG
+#endif // DEBUG_FILETABLE
             continue;
 		}
         if (*dir_ent->d_name == '.') {		// if it has a dot
-#if DEBUG
+#if DEBUG_FILETABLE
 			printf("Skipped hidden file: %s\n", dir_ent->d_name);
-#endif // DEBUG
+#endif // DEBUG_FILETABLE
             continue;
 		}
 
@@ -81,9 +83,9 @@ std::vector<unsigned char>> &filetable)
 
 		strcpy(c, BISON_TRANSFER_DIR.c_str());
 		strcat(c, name.c_str());	// concatenate to full system path
-#if DEBUG
+#if DEBUG_FILETABLE
 		printf("Processing File: %s\n", c);
-#endif // DEBUG
+#endif // DEBUG_FILETABLE
 
 		FILE *fp = fopen(c, "r");
 		if (!fp)
@@ -162,9 +164,9 @@ void prepare_connection()
     struct sockaddr_in my_addr;
 
     // socket it
-#if BRANDON_DEBUG
+#if DEBUG
     printf("Socketing...\n");
-#endif // if BRANDON_DEBUG
+#endif // if DEBUG
     sfd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
     if (sfd == -1)
         crit_error("Socket");
@@ -207,6 +209,7 @@ void handle_connection()
 			crit_error("Could not accept connections");
 	}
 
+	// switch transmitMode to filetable if necessary.
 	if (filequeue.empty())
 		transmitMode = FILETABLE;
 
@@ -263,6 +266,7 @@ void handle_connection()
 		close(pipefd[1]);					// parent reads from pipe, close w
 		close(cfd);
         struct child_struct_t *child_struct = new struct child_struct_t;
+		child_struct->buffer.set_capacity(1024*1024);
         std::cout << "Struct created: " <<(void*) child_struct << std::endl;
         child_struct->pipe = pipefd[0];
         printf("Pipe: %d\n", pipefd[0]);
@@ -308,57 +312,90 @@ void handle_children()
 					if ((ret = update_filetable(directory, filetable)))
 						error(ret);
 
-					char c[3];							// handle two chars
+					char buf[MAXBUFLEN];	
 					std::vector<unsigned char> sum(16);
 					std::string filename;
 					std::map<std::string, std::vector<unsigned char>>
 						tmp_filetable;
 					int i = 0;
 					int len;
-					// read and process into filetable
-					while ((len = read((*it)->pipe, c, 2)) > 0) {
-						if (i < 16) {		// sum processing
-							if (len < 2)
-								throw(1);
-							unsigned char tmp = 0;
-							// process first 4 bits
-							if (c[0] >= 'a' && c[0] <= 'f') {
-								tmp += (c[0] - 'a' + 10) << 4;
-							} else if (c[0] >= 'A' && c[0] <= 'F') {
-								tmp += (c[0] - 'A' + 10) << 4;
-							} else if (c[0] >= '0' && c[0] <= '9') {
-								tmp += (c[0] - '0') << 4;
-							} else {
-								throw(2);
-							}
-							// process last 4 bits
-							if (c[1] >= 'a' && c[1] <= 'f') {
-								tmp += (c[1] - 'a' + 10);
-							} else if (c[1] >= 'A' && c[1] <= 'F') {
-								tmp += (c[1] - 'A' + 10);
-							} else if (c[1] >= '0' && c[1] <= '9') {
-								tmp += (c[1] - '0');
-							} else {
-								throw(2);
+					// read all of filetable into a buffer to process later
+					std::cout << "Reading file contents into buffer."
+						<< std::endl;
+					while ((len = read((*it)->pipe, buf, MAXBUFLEN + 1)) > 0) {
+						for (int i = 0; i < len; i++) {
+							putchar(buf[i]);
+							(*it)->buffer.push_back(buf[i]);
+						}
+					}
+
+					unsigned char tmp;
+					std::cout << "Processing buffer..." << std::endl;
+					std::cout << "Is buffer empty? " << (*it)->buffer.empty() 
+						<< std::endl;
+					while (!((*it)->buffer.empty())) {
+						char c = (*it)->buffer[0];
+						(*it)->buffer.pop_front();
+						putchar(c);
+						if (c == '\n') {
+							// check for premature newlines.
+							if (i != 34) {
+								throw(5);
 							}
 
-							sum[i++] = tmp;
-						} else if (i == 16) {
-							if (len < 2)
-								throw(3);
-							if (c[0] != ' ' || c[1] != ' ')
-								throw(4);
-							i++;
-						} else {
-							// anything that returns a zero length will not -
-							// be here.
-							if (len == 2) {
-								filename.push_back(c[0]);
-								filename.push_back(c[1]);
-							} else {
-								filename.push_back(c[0]);
-							}
+							// push elements into the filetable
+							tmp_filetable.emplace(filename, sum);
+
+							// clear filename and leave sum alone.
+							filename.clear();
+							i = 0;
+							continue;
 						}
+
+						// first 32 characters are md5 sum.
+						if (i < 32) {
+							if (i % 2 == 0) {
+								tmp = 0;
+								if (c >= 'a' && c <= 'f') {
+									tmp += (c - 'a' + 10) << 4;
+								} else if (c >= 'A' && c <= 'F') {
+									tmp += (c - 'A' + 10) << 4;
+								} else if (c >= '0' && c <= '9') {
+									tmp += (c - '0') << 4;
+								} else {
+									throw(2);
+								}
+								// increment i for next character
+								++i;
+								continue;
+							} else {
+								if (c >= 'a' && c <= 'f') {
+									tmp += (c - 'a' + 10);
+								} else if (c >= 'A' && c <= 'F') {
+									tmp += (c - 'A' + 10);
+								} else if (c >= '0' && c <= '9') {
+									tmp += (c - '0');
+								} else {
+									throw(2);
+								}
+								// increment i and take care of sum
+								sum[(i++ - 1) / 2] = tmp;
+								continue;
+							}
+						// next two characters are spaces.
+						} else if (i >= 32 && i <= 33) {
+							// check if spaces
+							if (c != ' ')
+								throw(4);
+							++i;
+							continue;
+						// everything else is part of the filename
+						} else {
+							filename.push_back(c);
+							putchar(c);
+							continue;
+						}
+						throw(6);
 					}
 					// check for files that exist here that don't exist on -
 					// the client
@@ -373,21 +410,23 @@ void handle_children()
 					for (std::map<std::string, std::vector<unsigned char>>
 						::iterator it = filetable.begin();
 						it != filetable.end(); it++) {
-						std::cout << "Do we have: " << it->first << std::endl;
+						std::cout << "Does client have: " << it->first
+							<< std::flush;
 						std::map<std::string, std::vector<unsigned char>>
 							::iterator it2 = tmp_filetable.find(it->first);
 						// handle nonexistent files
 						if (it2 == tmp_filetable.end()) {
-							std::cout << "Nonexistent file: " << it->first
-								<< std::endl;
+							std::cout << " No." << std::endl;
 							filequeue.push(it->first);
 							continue;
 						}
 						// handle inconnect / incomplete files
 						if (it2->second != it->second) {
+							std::cout << " Corrupt file!" << std::endl;
 							filequeue.push(it->first);
 							continue;
 						}
+						std::cout << " Yes!" << std::endl;
 					}
 					
 				} break;

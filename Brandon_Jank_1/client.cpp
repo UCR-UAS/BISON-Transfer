@@ -36,6 +36,7 @@ int sfd;
 std::string BISON_TRANSFER_SERVER;
 int BISON_TRANSFER_PORT;
 std::string BISON_RECIEVE_DIR;
+std::map<std::string, std::vector<unsigned char>> filetable;
 
 // ============ Configuration ==============
 void configure_client(YAML::Node &config)
@@ -148,62 +149,9 @@ std::vector<unsigned char>> &filetable)
 	return 0;
 }
 
-int main (int argc, char *argv[])
+// =========== Handle Connection ===========
+void handle_connection()
 {
-	YAML::Node config;
-	configure_client(config);
-
-#if DEBUG
-	std::cout << "Writing config file" << std::endl;
-#endif // if DEBUG
-
-	// Write out the configuration before starting 
-	boost::filesystem::path dir(__DEF_CLIENT_CONFIG_PATH__);
-	if (!boost::filesystem::exists(dir)) {
-		std::cerr << "Configuration directory does not exist.  Creating..."
-			<< std::flush;
-		if (boost::filesystem::create_directories(dir))
-			std::cout << "Created." << std::endl;
-	}
-	std::ofstream fout(__DEF_CLIENT_CONFIG_PATH__
-		+ std::string(__DEF_CLIENT_CONFIG_FILE__));
-	fout << "%YAML 1.2\n" << "---\n";
-	fout << config;
-
-	printf("Client Starting Up...\n");
-
-	// Insert PID file management stuff here
-
-	signal(SIGCHLD, SIG_IGN);				// ignore children for now
-	// Handle different ways of program termination
-	signal(SIGTERM, terminate_nicely);
-	signal(SIGINT, terminate_nicely);
-
-#if DEBUG
-	printf("Checking if BISON-Recieve directory exists.\n");
-#endif // if DEBUG
-	boost::filesystem::path dir_chk(BISON_RECIEVE_DIR);
-	if (!boost::filesystem::exists(dir_chk)) {
-#if DEBUG
-	printf("Recieve directory does not exist.  Creating...");
-			if (boost::filesystem::create_directories(dir_chk)) {
-				std::cout << "Created." << std::endl;
-			} else {
-				std::cout << "Not created? continuing." << std::endl;
-			}
-#else
-			boost::filesystem::create_directories(dir_chk);
-#endif
-	}
-	DIR *directory = opendir(BISON_RECIEVE_DIR.c_str());
-	std::map<std::string, std::vector<unsigned char>> filetable;
-
-	const char *ret;
-	ret = update_filetable(directory, filetable);
-	if (ret) {
-		std::cerr << "Filetable did not update:" << ret << std::endl;
-		exit(1);
-	}
 
 	struct sockaddr_in srv_addr;
 #if DEBUG
@@ -336,19 +284,83 @@ int main (int argc, char *argv[])
 			fclose(output_file);
 		}
 		break;
-		case FILETABLE_SEND:
+		case FILETABLE_SEND: {
+			DIR *directory = opendir(BISON_RECIEVE_DIR.c_str());
+
+			const char *ret;
+			ret = update_filetable(directory, filetable);
+			if (ret) {
+				std::cerr << "Filetable did not update:" << ret << std::endl;
+				exit(1);
+			}
+			closedir(directory);
 			for (std::map<std::string, std::vector<unsigned char>>::iterator 
 				it=filetable.begin(); it != filetable.end(); it++) {
 				for (std::vector<unsigned char>::iterator iter
-					= it->second.begin(); iter != it->second.end(); iter++)
+					= it->second.begin(); iter != it->second.end(); iter++) {
 					dprintf(sfd, "%02x", *iter);	// print MD5 sum
+					printf("%02x", *iter);
+				}
 				dprintf(sfd, "  %s\n", it->first.c_str());
 													// print filename
+				printf("  %s\n", it->first.c_str());
 			}
-		break;
+		} break;
 	}
-			
-
 	close(sfd);
+}
+
+int main (int argc, char *argv[])
+{
+	YAML::Node config;
+	configure_client(config);
+
+#if DEBUG
+	std::cout << "Writing config file" << std::endl;
+#endif // if DEBUG
+
+	// Write out the configuration before starting 
+	boost::filesystem::path dir(__DEF_CLIENT_CONFIG_PATH__);
+	if (!boost::filesystem::exists(dir)) {
+		std::cerr << "Configuration directory does not exist.  Creating..."
+			<< std::flush;
+		if (boost::filesystem::create_directories(dir))
+			std::cout << "Created." << std::endl;
+	}
+	std::ofstream fout(__DEF_CLIENT_CONFIG_PATH__
+		+ std::string(__DEF_CLIENT_CONFIG_FILE__));
+	fout << "%YAML 1.2\n" << "---\n";
+	fout << config;
+
+	printf("Client Starting Up...\n");
+
+	// Insert PID file management stuff here
+
+	signal(SIGCHLD, SIG_IGN);				// ignore children for now
+	// Handle different ways of program termination
+	signal(SIGTERM, terminate_nicely);
+	signal(SIGINT, terminate_nicely);
+
+#if DEBUG
+	printf("Checking if BISON-Recieve directory exists.\n");
+#endif // if DEBUG
+	boost::filesystem::path dir_chk(BISON_RECIEVE_DIR);
+	if (!boost::filesystem::exists(dir_chk)) {
+#if DEBUG
+	printf("Recieve directory does not exist.  Creating...");
+			if (boost::filesystem::create_directories(dir_chk)) {
+				std::cout << "Created." << std::endl;
+			} else {
+				std::cout << "Not created? continuing." << std::endl;
+			}
+#else
+			boost::filesystem::create_directories(dir_chk);
+#endif
+	}
+
+	while(1) {
+		handle_connection();
+	}
+
 	return 0;
 }
