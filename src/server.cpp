@@ -1,10 +1,13 @@
-/* Engineer: Brandon Lu
+/* Copyright (c) 2014 UCR-UAS
+ * You should have recieved a copy of the MIT licence with this file.
+ * Engineer: Brandon Lu
  * Description: This is the BISON-Transfer server version 1.
  * What dose it do?  Tarring and insanity.
- * This is indeed a multi-threaded server.
+ * This is indeed a child-processed server.
  */
 
 // ================= TODO =================
+// Multithreading instead of forking?
 // File tracking implementation improvement
 // Actually keep track of clients
 // Actually log and -HUP support
@@ -288,7 +291,8 @@ void handle_connection()
  *
  * The code that is currently here is all blocking, and it may soon be -
  * replaced with nonblocking code (once Brandon gets how to do so).
- * Bear with it for now...
+ * Bear with it for now...  but the actual filetable processing might still be
+ * blocking regardless.
  */
 void handle_children()
 {

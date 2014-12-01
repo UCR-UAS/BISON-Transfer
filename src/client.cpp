@@ -1,11 +1,13 @@
-/* Engineer: Brandon lu
+/* Copyright (c) 2014 UCR-UAS
+ * You should have recieved a copy of the MIT licence with this file.
+ * Engineer: Brandon lu
  * Description: This is the BISON-Transfer client version 1.
  * What dose it do? Un-tarring and insanity.
- * This is probably not a multi-threaded client.
+ * This is not a multi-threaded client.
  */
 
-// ================ Notices ===============
-/* You should probably read the server code comments for the most updated
+/* ================ Notices ===============
+ * You should probably read the server code comments for the most updated
  * information.  The server kind of came first.
  */
 
@@ -31,6 +33,8 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
+enum action_t {NONE, RECIEVE, FILETABLE_SEND};
+
 // =========== Global Variables ===========
 int sfd;
 std::string BISON_TRANSFER_SERVER;
@@ -39,6 +43,9 @@ std::string BISON_RECIEVE_DIR;
 std::map<std::string, std::vector<unsigned char>> filetable;
 
 // ============ Configuration ==============
+/*
+ * The configuration functions for the server and client get very repetetive.
+ */
 void configure_client(YAML::Node &config)
 {
 	try {
@@ -95,15 +102,9 @@ std::vector<unsigned char>> &filetable)
 	struct dirent *dir_ent;
     while ((dir_ent = readdir(directory))) {
         if (dir_ent->d_type != DT_REG) {	// if it is not a file
-#if DEBUG
-			printf("Skipped irregular file, %s\n", dir_ent->d_name);
-#endif // DEBUG
             continue;
 		}
         if (*dir_ent->d_name == '.') {		// if it has a dot
-#if DEBUG
-			printf("Skipped hidden file: %s\n", dir_ent->d_name);
-#endif // DEBUG
             continue;
 		}
 
@@ -114,9 +115,6 @@ std::vector<unsigned char>> &filetable)
 
 		strcpy(c, BISON_RECIEVE_DIR.c_str());
 		strcat(c, name.c_str());	// concatenate to full system path
-#if DEBUG
-		printf("Processing File: %s\n", c);
-#endif // DEBUG
 
 		FILE *fp = fopen(c, "r");
 		if (!fp)
@@ -144,7 +142,6 @@ std::vector<unsigned char>> &filetable)
 
 		filetable.insert(std::pair<std::string, std::vector<unsigned char>>
 			(name, sum));
-		printf("Inserted: %s into filetable\n", name.c_str());
     }
 	return 0;
 }
@@ -172,16 +169,20 @@ void handle_connection()
 
 	// bind
 #if DEBUG
-	printf("Binding... \n");
+	printf("Connecting... \n");
 #endif // if DEBUG
-	if (connect(sfd, (struct sockaddr*) &srv_addr, sizeof(struct sockaddr_in))
-			== -1)
-		crit_error("Connect Failed");
+	while (connect(sfd, (struct sockaddr*) &srv_addr,
+		sizeof(struct sockaddr_in)) == -1) {
+		std:: cout << '.' << std::flush;
+		for (int i = 0; i < 1000; i++)
+			usleep(1000);
+		errno = 0;
+	}
 
 	int since_last_newline = -1;
     int count = 0;
     std::string filename;
-	enum action_t {NONE, RECIEVE, FILETABLE_SEND} action = NONE;
+	enum action_t action = NONE;
 	char c;
 	// Excuse the ugly, difficult parser.
 	while(1) {
@@ -310,6 +311,47 @@ void handle_connection()
 	close(sfd);
 }
 
+// ====== Directory Check and Create =======
+void dirChkCreate(const char* const directory, const char* const HR_directory)
+{
+#if DEBUG
+	std::cout << "Checking if the " << HR_directory << " directory exists."
+		<< std::endl;
+#endif // if DEBUG
+	boost::filesystem::path dir_chk(directory);
+	if (!boost::filesystem::exists(dir_chk)) {
+#if DEBUG
+	printf("%s directory does not exist.  Creating...", HR_directory);
+			if (boost::filesystem::create_directories(dir_chk)) {
+				std::cout << "Created." << std::endl;
+			} else {
+				std::cout << "Not created? continuing." << std::endl;
+			}
+#else
+			boost::filesystem::create_directories(dir_chk);
+#endif
+	}
+}
+
+// =========== Write Out Config ============
+void writeOutYaml(YAML::Node& yaml_config, const std::string& file)
+{
+	std::ofstream fout(file);
+	fout << "%YAML 1.2\n---\n";				// print out yaml version string
+	fout << yaml_config;					// print out our YAML
+}
+
+// =========== Signal Handling =============
+void signalHandling()
+{
+	signal(SIGCHLD, SIG_IGN);				// ignore children for now
+	// Handle different ways of program termination
+	signal(SIGTERM, terminate_nicely);
+	signal(SIGINT, terminate_nicely);
+
+}
+
+// ========== The Main Function ============
 int main (int argc, char *argv[])
 {
 	YAML::Node config;
@@ -320,43 +362,20 @@ int main (int argc, char *argv[])
 #endif // if DEBUG
 
 	// Write out the configuration before starting 
-	boost::filesystem::path dir(__DEF_CLIENT_CONFIG_PATH__);
-	if (!boost::filesystem::exists(dir)) {
-		std::cerr << "Configuration directory does not exist.  Creating..."
-			<< std::flush;
-		if (boost::filesystem::create_directories(dir))
-			std::cout << "Created." << std::endl;
-	}
-	std::ofstream fout(__DEF_CLIENT_CONFIG_PATH__
-		+ std::string(__DEF_CLIENT_CONFIG_FILE__));
-	fout << "%YAML 1.2\n" << "---\n";
-	fout << config;
+	dirChkCreate(__DEF_CLIENT_CONFIG_PATH__, "configuration");
 
-	printf("Client Starting Up...\n");
+	writeOutYaml(config, __DEF_CLIENT_CONFIG_PATH__ 
+		+ std::string(__DEF_CLIENT_CONFIG_FILE__));
+
+
 
 	// Insert PID file management stuff here
 
-	signal(SIGCHLD, SIG_IGN);				// ignore children for now
-	// Handle different ways of program termination
-	signal(SIGTERM, terminate_nicely);
-	signal(SIGINT, terminate_nicely);
+	signalHandling();
 
-#if DEBUG
-	printf("Checking if BISON-Recieve directory exists.\n");
-#endif // if DEBUG
-	boost::filesystem::path dir_chk(BISON_RECIEVE_DIR);
-	if (!boost::filesystem::exists(dir_chk)) {
-#if DEBUG
-	printf("Recieve directory does not exist.  Creating...");
-			if (boost::filesystem::create_directories(dir_chk)) {
-				std::cout << "Created." << std::endl;
-			} else {
-				std::cout << "Not created? continuing." << std::endl;
-			}
-#else
-			boost::filesystem::create_directories(dir_chk);
-#endif
-	}
+	dirChkCreate(BISON_RECIEVE_DIR.c_str(), "recieve");
+
+	printf("Client Starting Up...\n");
 
 	while(1) {
 		handle_connection();
