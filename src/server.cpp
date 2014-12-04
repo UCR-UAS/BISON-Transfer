@@ -264,21 +264,27 @@ void handle_children()
 						<< std::endl;
 					while ((len = read((*it)->pipe, buf, MAXBUFLEN + 1)) > 0) {
 						for (int i = 0; i < len; i++) {
-							putchar(buf[i]);
 							(*it)->buffer.push_back(buf[i]);
 						}
 					}
 
 					unsigned char tmp;
 					std::cout << "Processing buffer..." << std::endl;
-					std::cout << "Is buffer empty? " << (*it)->buffer.empty() 
-						<< std::endl;
+					// each entry should be in the form of 
+					// (32 char md5 sum) (2 spaces) (a filename) (newline)
+					int termState = 0;
 					while (!((*it)->buffer.empty())) {
 						char c = (*it)->buffer[0];
 						(*it)->buffer.pop_front();
-						putchar(c);
 						if (c == '\n') {
-							// check for premature newlines.
+							// okay, time to end the parsing
+							if (i == 0) {
+								termState = 1;
+								continue;
+							}
+
+							// check for premature newlines (filename should -
+							// be at least one character long)
 							if (i != 34) {
 								throw(5);
 							}
@@ -291,6 +297,11 @@ void handle_children()
 							i = 0;
 							continue;
 						}
+						
+						// throw an exception if this was supposed to -
+						// mark a termination but did not
+						if (termState)
+							throw(7);
 
 						// first 32 characters are md5 sum.
 						if (i < 32) {
@@ -332,41 +343,44 @@ void handle_children()
 						// everything else is part of the filename
 						} else {
 							filename.push_back(c);
-							putchar(c);
 							continue;
 						}
 						throw(6);
 					}
-					// check for files that exist here that don't exist on -
-					// the client
-											// the file queue must be empty -
-											// if it is not, empty it.
+					
+					// check if we are allowed to pass
+					if (!termState)
+						exit(1);
+
+					// the file queue must be empty -
+					// if it is not, empty it.
 					if (!filequeue.empty())
 						std::cerr << "Filequeue is not empty! "
 							<< "Prematurely emptying it." << std::endl;
 					while (!filequeue.empty())
 						filequeue.pop();
 
+					// check for files that exist here that don't exist on -
+					// the client
 					for (std::map<std::string, std::vector<unsigned char>>
 						::iterator it = filetable.begin();
 						it != filetable.end(); it++) {
-						std::cout << "Does client have: " << it->first
-							<< std::flush;
 						std::map<std::string, std::vector<unsigned char>>
 							::iterator it2 = tmp_filetable.find(it->first);
 						// handle nonexistent files
 						if (it2 == tmp_filetable.end()) {
-							std::cout << " No." << std::endl;
+							std::cout << "Client missing: " << it->first
+								<< std::endl;
 							filequeue.push(it->first);
 							continue;
 						}
 						// handle inconnect / incomplete files
 						if (it2->second != it->second) {
-							std::cout << " Corrupt file!" << std::endl;
+							std::cout << " Corrupt file: " << it->first 
+								<< std::endl;
 							filequeue.push(it->first);
 							continue;
 						}
-						std::cout << " Yes!" << std::endl;
 					}
 					
 				} break;

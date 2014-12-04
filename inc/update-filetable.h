@@ -33,6 +33,10 @@ std::vector<unsigned char>> &filetable)
 											// for everything.
 		std::string name(dir_ent->d_name);	// generate a string from the name
 
+		if (filetable.find(name) != filetable.end())
+			continue;						// ignore if the filename already -
+											// exists in the filetable
+
 		strcpy(c, path.c_str());
 		strcat(c, name.c_str());	// concatenate to full system path
 

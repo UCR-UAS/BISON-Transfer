@@ -159,18 +159,18 @@ void handle_connection()
 				continue;
 			}
 		} else if (count == 0 && c == 'F') {
-			count = 9;
+			count = 10;
 			continue;
-		} else if (count == 9 && c == 'T') {
+		} else if (count == 10 && c == 'T') {
 			++count;
 			continue;
-		} else if (count == 10 && c == 'R') {
+		} else if (count == 11 && c == 'R') {
 			++count;
 			continue;
-		} else if (count == 11 && c == 'E') {
+		} else if (count == 12 && c == 'E') {
 			++count;
 			continue;
-		} else if (count == 12 && c == 'Q') {
+		} else if (count == 13 && c == 'Q') {
 			++count;
 			action = FILETABLE_SEND;
 			continue;
@@ -202,7 +202,7 @@ void handle_connection()
             ++count;
 			action = RECIEVE;
             continue;
-        } else if (action == RECIEVE) {
+        } else if (action == RECIEVE && count == 9) {
             filename.push_back(c);
 		    since_last_newline = -1;
         } else {
@@ -247,12 +247,12 @@ void handle_connection()
 				for (std::vector<unsigned char>::iterator iter
 					= it->second.begin(); iter != it->second.end(); iter++) {
 					dprintf(sfd, "%02x", *iter);	// print MD5 sum
-					printf("%02x", *iter);
 				}
 				dprintf(sfd, "  %s\n", it->first.c_str());
 													// print filename
-				printf("  %s\n", it->first.c_str());
 			}
+			// newline termination
+			dprintf(sfd, "\n");
 		} break;
 	}
 	close(sfd);

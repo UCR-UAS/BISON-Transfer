@@ -52,8 +52,8 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * Client code cleanup
- * Update tables as an external file
- * Improved update filetables housekeeping
- * Better client housekeeping (nonblocking functions, anyone?)
  * -HUP reload (test not done, should be done in server)
+ * Robustness audit
+ * Robustness improvements
+ * Further testing
+ * Better client housekeeping (nonblocking functions, anyone?)
