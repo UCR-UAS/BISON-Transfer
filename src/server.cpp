@@ -349,8 +349,11 @@ void handle_children()
 					}
 					
 					// check if we are allowed to pass
-					if (!termState)
+					if (!termState) {
+						std::cerr << "Parsing did not complete successfully." 
+							<< std::endl;
 						exit(1);
+					}
 
 					// the file queue must be empty -
 					// if it is not, empty it.
