@@ -1,12 +1,15 @@
 CPP=g++
 CPPFLAGS=-Wall -ggdb `pkg-config --cflags --libs openssl` -std=c++0x `pkg-config --libs yaml-cpp` -lboost_filesystem -lboost_system -iquote inc/
-BINARY_DIR=bin
-INCLUDE_DIR=inc
-SOURCES_CPP=src/server.cpp src/client.cpp
-INCLUDES=BISON-Defaults.h
-EXECUTABLES=bin/server bin/client
+BINARY_DIR=bin/
+INCLUDE_DIR=inc/
+SOURCES=server.cpp client.cpp
+SOURCES_DIR=src/
+SOURCES_CPP=$(addprefix $(SOURCES_DIR),$(SOURCES))
+INCLUDES-F=BISON-Defaults.h update-filetable.h
+INCLUDES=$(addprefix $(INCLUDE_DIR),$(INCLUDES-F))
+EXECUTABLES=$(addprefix $(BINARY_DIR),$(SOURCES:.cpp= ))
 
-bin/%: src/%.cpp $(INCLUDE_DIR)/$(INCLUDES)
+$(BINARY_DIR)%: $(SOURCES_DIR)%.cpp $(INCLUDES)
 	$(CPP) $(CPPFLAGS) $< -o $@
 
 all: $(EXECUTABLES)
