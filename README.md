@@ -52,8 +52,17 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
+ * Preforking and other client-handling insanity
  * -HUP reload (test not done, should be done in server)
  * Robustness audit
  * Robustness improvements
+ * Loglevel improments
  * Further testing
- * Better client housekeeping (nonblocking functions, anyone?)
+ * Documentation and insanity (mostly documentation)
+
+Preforking and other client-handling insanity
+---------------------------------------------
+ * Shared filetable memory
+ * Minimum server number
+ * Move filetable handling to client
+ * Maximum connections before quit on forked
