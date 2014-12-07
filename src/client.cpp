@@ -1,6 +1,6 @@
 /* Copyright (c) 2014 UCR-UAS
  * You should have recieved a copy of the MIT licence with this file.
- * Engineer: Brandon lu
+ * Engineer: Brandon Lu
  * Description: This is the BISON-Transfer client version 1.
  * What dose it do? Un-tarring and insanity.
  * This is not a multi-threaded client.
@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include "BISON-Defaults.h"
 #include <boost/filesystem.hpp>
+#include "directory-check.h"
 #include <dirent.h>
 #include <errno.h>
 #include <exception>
@@ -35,42 +36,15 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
+enum action_t {FILETABLE, TRANSFER, REALTIME};
+
 // =========== Global Variables ===========
 int sfd;
 std::string BISON_TRANSFER_SERVER;
 int BISON_TRANSFER_PORT;
 std::string BISON_RECIEVE_DIR;
+std::queue<std::string> filequeue;
 std::map<std::string, std::vector<unsigned char>> filetable;
-
-// =========== Write Out Config ============
-void writeOutYaml(YAML::Node& yaml_config, const std::string& file)
-{
-	std::ofstream fout(file);
-	fout << "%YAML 1.2\n---\n";				// print out yaml version string
-	fout << yaml_config;					// print out our YAML
-}
-
-// ====== Directory Check and Create =======
-void dirChkCreate(const char* const directory, const char* const HR_directory)
-{
-#if DEBUG
-	std::cout << "Checking if the " << HR_directory << " directory exists."
-		<< std::endl;
-#endif // if DEBUG
-	boost::filesystem::path dir_chk(directory);
-	if (!boost::filesystem::exists(dir_chk)) {
-#if DEBUG
-	printf("%s directory does not exist.  Creating...", HR_directory);
-			if (boost::filesystem::create_directories(dir_chk)) {
-				std::cout << "Created." << std::endl;
-			} else {
-				std::cout << "Not created? continuing." << std::endl;
-			}
-#else
-			boost::filesystem::create_directories(dir_chk);
-#endif
-	}
-}
 
 // ============ Configuration ==============
 /*
@@ -133,22 +107,6 @@ void terminate_nicely(int sig)
 void error_terminate(const int status) {
 	close(sfd);
 	exit(status);
-}
-
-// ============ Send Filetable =============
-void send_filetable()
-{
-	for (std::map<std::string, std::vector<unsigned char>>::iterator 
-			it=filetable.begin(); it != filetable.end(); it++) {
-		for (std::vector<unsigned char>::iterator iter
-				= it->second.begin(); iter != it->second.end(); iter++) {
-			dprintf(sfd, "%02x", *iter);	// print MD5 sum
-		}
-		dprintf(sfd, "  %s\n", it->first.c_str());
-		// print filename
-	}
-	// newline termination
-	dprintf(sfd, "\n");
 }
 
 // =========== Handle Connection ===========
@@ -217,7 +175,6 @@ void handle_connection()
 				std::cerr << "Filetable did not update:" << ret << std::endl;
 				exit(1);
 			}
-			send_filetable();
 		} break;
 	}
 	close(sfd);

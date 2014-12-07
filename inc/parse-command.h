@@ -1,7 +1,7 @@
 #ifndef __BISON_ACTION_PARSER__
 #define __BISON_ACTION_PARSER__
 
-typedef enum {NONE, RECIEVE, FILETABLE_REC} action_t;
+typedef enum {NONE, SEND, FILETABLE_REQ} action_t;
 
 void parse_command(int sfd, action_t &action, std::string &filename)
 {
@@ -20,7 +20,7 @@ void parse_command(int sfd, action_t &action, std::string &filename)
 				if (action != NONE)
 					break;
 				else {
-					std::cerr << "Fake server detected?" << std::endl;
+					std::cerr << "Fake client detected?" << std::endl;
 					exit(1);
 				}
 			} else {
@@ -33,54 +33,42 @@ void parse_command(int sfd, action_t &action, std::string &filename)
 				continue;
 			}
 		} else if (count == 0 && c == 'F') {
-			count = 10;
+			count = 6;
 			continue;
-		} else if (count == 10 && c == 'T') {
+		} else if (count == 6 && c == 'T') {
 			++count;
 			continue;
-		} else if (count == 11 && c == 'S') {
+		} else if (count == 7 && c == 'R') {
 			++count;
 			continue;
-		} else if (count == 12 && c == 'N') {
+		} else if (count == 8 && c == 'E') {
 			++count;
 			continue;
-		} else if (count == 13 && c == 'D') {
+		} else if (count == 9 && c == 'Q') {
 			++count;
 			action = FILETABLE_REC;
 			continue;
-		} else if (count == 0 && c == 'S') {
+		} else if (count == 0 && c == 'R') {
             ++count;
             continue;
         } else if (count == 1 && c == 'E') {
             ++count;
             continue;
-        } else if (count == 2 && c == 'N') {
+        } else if (count == 2 && c == 'Q') {
             ++count;
             continue;
-        } else if (count == 3 && c == 'D') {
+        } else if (count == 3 && c == ':') {
             ++count;
             continue;
-        } else if (count == 4 && c == 'I') {
+        } else if (count == 4 && c == ' ') {
             ++count;
+			action = SEND;
             continue;
-        } else if (count == 5 && c == 'N') {
-            ++count;
-            continue;
-        } else if (count == 6 && c == 'G') {
-            ++count;
-            continue;
-        } else if (count == 7 && c == ':') {
-            ++count;
-            continue;
-        } else if (count == 8 && c == ' ') {
-            ++count;
-			action = RECIEVE;
-            continue;
-        } else if (action == RECIEVE && count == 9) {
+        } else if (action == SEND && count == 5) {
             filename.push_back(c);
 		    since_last_newline = -1;
         } else {
-			std::cerr << "Fake server detected? Action not set." << std::endl;
+			std::cerr << "Fake client detected? Action not set." << std::endl;
 			exit(1);
 		}
 	}
