@@ -26,7 +26,7 @@
 #include <map>
 #include <netinet/in.h>
 #include <openssl/md5.h>
-#include "parse_filetable.h"
+#include "parse-filetable.h"
 #include <queue>
 #include <signal.h>
 #include <stdlib.h>

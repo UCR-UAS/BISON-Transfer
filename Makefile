@@ -5,7 +5,7 @@ INCLUDE_DIR=inc/
 SOURCES=server.cpp client.cpp
 SOURCES_DIR=src/
 SOURCES_CPP=$(addprefix $(SOURCES_DIR),$(SOURCES))
-INCLUDES-F=BISON-Defaults.h update-filetable.h
+INCLUDES-F=BISON-Defaults.h update-filetable.h parse-filetable.h
 INCLUDES=$(addprefix $(INCLUDE_DIR),$(INCLUDES-F))
 EXECUTABLES=$(addprefix $(BINARY_DIR),$(SOURCES:.cpp= ))
 

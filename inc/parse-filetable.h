@@ -20,6 +20,7 @@ void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
 	while (!(buffer.empty())) {
 		char c = buffer[0];
 		buffer.pop_front();
+		// process whitespaces
 		if (c == '\n') {
 			// okay, time to end the parsing
 			if (i == 0) {
@@ -49,6 +50,8 @@ void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
 
 		// first 32 characters are md5 sum.
 		if (i < 32) {
+			// each unsigned char is two hexadecimal characters.
+			// process the first hex. character
 			if (i % 2 == 0) {
 				tmp = 0;
 				if (c >= 'a' && c <= 'f') {
@@ -63,6 +66,7 @@ void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
 				// increment i for next character
 				++i;
 				continue;
+			// process the second hex. character
 			} else {
 				if (c >= 'a' && c <= 'f') {
 					tmp += (c - 'a' + 10);
@@ -77,7 +81,7 @@ void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
 				sum[(i++ - 1) / 2] = tmp;
 				continue;
 			}
-			// next two characters are spaces.
+		// next two characters are spaces.
 		} else if (i >= 32 && i <= 33) {
 			// check if spaces
 			if (c != ' ')
