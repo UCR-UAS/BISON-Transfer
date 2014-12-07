@@ -1,5 +1,5 @@
 /* Copyright (c) 2014 UCR-UAS
- * You should have recieved a copy of the MIT licence with this file.
+ * You should have recieved a copy of the MIT license with this file.
  * Engineer: Brandon Lu
  * Description: This is the BISON-Transfer server version 1.
  * What dose it do?  Tarring and insanity.
@@ -26,6 +26,7 @@
 #include <map>
 #include <netinet/in.h>
 #include <openssl/md5.h>
+#include "parse_filetable.h"
 #include <queue>
 #include <signal.h>
 #include <stdlib.h>
@@ -252,14 +253,9 @@ void handle_children()
 					if ((ret = update_filetable(BISON_TRANSFER_DIR, filetable)))
 						error(ret);
 
-					char buf[MAXBUFLEN];	
-					std::vector<unsigned char> sum(16);
-					std::string filename;
-					std::map<std::string, std::vector<unsigned char>>
-						tmp_filetable;
-					int i = 0;
-					int len;
 					// read all of filetable into a buffer to process later
+					char buf[MAXBUFLEN];	
+					int len;
 					std::cout << "Reading file contents into buffer."
 						<< std::endl;
 					while ((len = read((*it)->pipe, buf, MAXBUFLEN + 1)) > 0) {
@@ -268,92 +264,11 @@ void handle_children()
 						}
 					}
 
-					unsigned char tmp;
+					// here is that processing I was talking about.
 					std::cout << "Processing buffer..." << std::endl;
-					// each entry should be in the form of 
-					// (32 char md5 sum) (2 spaces) (a filename) (newline)
-					int termState = 0;
-					while (!((*it)->buffer.empty())) {
-						char c = (*it)->buffer[0];
-						(*it)->buffer.pop_front();
-						if (c == '\n') {
-							// okay, time to end the parsing
-							if (i == 0) {
-								termState = 1;
-								continue;
-							}
-
-							// check for premature newlines (filename should -
-							// be at least one character long)
-							if (i != 34) {
-								throw(5);
-							}
-
-							// push elements into the filetable
-							tmp_filetable.emplace(filename, sum);
-
-							// clear filename and leave sum alone.
-							filename.clear();
-							i = 0;
-							continue;
-						}
-						
-						// throw an exception if this was supposed to -
-						// mark a termination but did not
-						if (termState)
-							throw(7);
-
-						// first 32 characters are md5 sum.
-						if (i < 32) {
-							if (i % 2 == 0) {
-								tmp = 0;
-								if (c >= 'a' && c <= 'f') {
-									tmp += (c - 'a' + 10) << 4;
-								} else if (c >= 'A' && c <= 'F') {
-									tmp += (c - 'A' + 10) << 4;
-								} else if (c >= '0' && c <= '9') {
-									tmp += (c - '0') << 4;
-								} else {
-									throw(2);
-								}
-								// increment i for next character
-								++i;
-								continue;
-							} else {
-								if (c >= 'a' && c <= 'f') {
-									tmp += (c - 'a' + 10);
-								} else if (c >= 'A' && c <= 'F') {
-									tmp += (c - 'A' + 10);
-								} else if (c >= '0' && c <= '9') {
-									tmp += (c - '0');
-								} else {
-									throw(2);
-								}
-								// increment i and take care of sum
-								sum[(i++ - 1) / 2] = tmp;
-								continue;
-							}
-						// next two characters are spaces.
-						} else if (i >= 32 && i <= 33) {
-							// check if spaces
-							if (c != ' ')
-								throw(4);
-							++i;
-							continue;
-						// everything else is part of the filename
-						} else {
-							filename.push_back(c);
-							continue;
-						}
-						throw(6);
-					}
-					
-					// check if we are allowed to pass
-					if (!termState) {
-						std::cerr << "Parsing did not complete successfully." 
-							<< std::endl;
-						exit(1);
-					}
+					std::map<std::string, std::vector<unsigned char>> 
+						tmp_filetable;
+					md5_parse((*it)->buffer, tmp_filetable);
 
 					// the file queue must be empty -
 					// if it is not, empty it.
