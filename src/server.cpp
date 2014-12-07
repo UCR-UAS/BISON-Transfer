@@ -102,6 +102,22 @@ void configure_server(YAML::Node &config)
 	}
 }
 
+// ============ Send Filetable =============
+void send_filetable()
+{
+	for (std::map<std::string, std::vector<unsigned char>>::iterator 
+			it=filetable.begin(); it != filetable.end(); it++) {
+		for (std::vector<unsigned char>::iterator iter
+				= it->second.begin(); iter != it->second.end(); iter++) {
+			dprintf(sfd, "%02x", *iter);	// print MD5 sum
+		}
+		dprintf(sfd, "  %s\n", it->first.c_str());
+		// print filename
+	}
+	// newline termination
+	dprintf(sfd, "\n");
+}
+
 // ========= Connection Management =========
 void prepare_connection()
 {
@@ -172,7 +188,7 @@ void handle_connection()
 		switch (transmitMode) {
 			case FILETABLE:					// ask for filetable
 			{
-				dprintf(cfd, "FTREQ\n\n");
+				dprintf(cfd, "FTSND\n\n");
 				printf("Recieving filetable and calculating.\n");
 				char buf[MAXBUFLEN + 1];
 				int len;

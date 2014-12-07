@@ -93,7 +93,6 @@ void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
 			filename.push_back(c);
 		}		continue;
 	}
-	throw(6);
 
 	// check if we are allowed to pass
 	if (!termState) {
