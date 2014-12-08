@@ -26,7 +26,6 @@
 #include <netinet/in.h>
 #include <openssl/md5.h>
 #include "parse-command.h"
-#include <queue>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -141,7 +140,7 @@ void send_filetable(int cfd)
 				= it->second.begin(); iter != it->second.end(); iter++) {
 			dprintf(cfd, "%02x", *iter);	// print MD5 sum
 		}
-		dprintf(sfd, "  %s\n", it->first.c_str());
+		dprintf(cfd, "  %s\n", it->first.c_str());
 		// print filename
 	}
 	// newline termination
@@ -264,13 +263,12 @@ int main (int argc, char *argv[])
 
 	// Loop to keep accepting connections
 	while (1) {
-		handle_connection();
 		const char* ret = update_filetable(BISON_TRANSFER_DIR, filetable);
-		if (!ret) {
+		if (ret) {
 			std::cerr << "Error on filetable update: " << ret << std::endl;
 			exit(1);
 		}
-		handle_children();
+		handle_connection();
 	}
 
 	return 0;

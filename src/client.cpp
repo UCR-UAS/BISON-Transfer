@@ -152,6 +152,7 @@ void handle_connection(action_t &action)
 		{
 			std::cout << "Front is: " << filequeue.front() << std::endl;
 			std::string filename(filequeue.front());
+			filequeue.pop();				// remove front member
 			dprintf(sfd, "REQ: %s\n\n", filename.c_str());
 			FILE *output_file = fopen((BISON_RECIEVE_DIR + filename).c_str(),
 				"w");

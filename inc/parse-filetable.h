@@ -95,8 +95,8 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 
 	// check if we are allowed to pass
 	if (!termState) {
-		std::cerr << "Parsing did not complete successfully." 
-			<< std::endl;
+		std::cerr << "Parsing did not complete successfully."
+			<< " Unexpected termination." << std::endl;
 		exit(1);
 	}
 }
