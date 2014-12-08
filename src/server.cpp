@@ -133,7 +133,7 @@ void prepare_connection()
 }
 
 // ============ Send Filetable =============
-void send_filetable()
+void send_filetable(int cfd)
 {
 	for (std::map<std::string, std::vector<unsigned char>>::iterator 
 			it=filetable.begin(); it != filetable.end(); it++) {
@@ -169,7 +169,7 @@ void child_function(int cfd)
 			   write(cfd, buf, len);
 		}	break;
 		case FILETABLE_REQ:
-			send_filetable();
+			send_filetable(cfd);
 			break;
 	}
 }
@@ -208,14 +208,6 @@ void handle_connection()
 	}
 }
 
-// =========== Signal Handling ============
-void signalHandling()
-{
-	signal(SIGTERM, terminate_nicely);
-	signal(SIGINT, terminate_nicely);
-	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
-}
-
 // =========== Child Handling =============
 void handle_children()
 {
@@ -239,6 +231,14 @@ void error_terminate(const int status)
 	exit(status);
 }
 
+// =========== Signal Handling ============
+void signalHandling()
+{
+	signal(SIGTERM, terminate_nicely);
+	signal(SIGINT, terminate_nicely);
+	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
+}
+
 // ========== The Main Function ============
 int main (int argc, char *argv[])
 {
@@ -250,7 +250,7 @@ int main (int argc, char *argv[])
 #if DEBUG
 	printf("Checking if transmission directory exists...\n");
 #endif // if DEBUG
-	dirChkCreate(BISON_TRANSFER_DIR, "transfer");
+	dirChkCreate(BISON_TRANSFER_DIR.c_str(), "transfer");
 
 	printf("Server Starting Up...\n");
 
@@ -265,7 +265,7 @@ int main (int argc, char *argv[])
 	// Loop to keep accepting connections
 	while (1) {
 		handle_connection();
-		char ret = update_filetable();
+		const char* ret = update_filetable(BISON_TRANSFER_DIR, filetable);
 		if (!ret) {
 			std::cerr << "Error on filetable update: " << ret << std::endl;
 			exit(1);

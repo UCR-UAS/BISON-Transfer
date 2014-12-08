@@ -46,7 +46,7 @@ void parse_command(int sfd, action_t &action, std::string &filename)
 			continue;
 		} else if (count == 9 && c == 'Q') {
 			++count;
-			action = FILETABLE_REC;
+			action = FILETABLE_REQ;
 			continue;
 		} else if (count == 0 && c == 'R') {
             ++count;

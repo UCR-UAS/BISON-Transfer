@@ -7,6 +7,8 @@
 
 #ifndef __BISON_DIRECTORY_CHECK__
 #define __BISON_DIRECTORY_CHECK__
+#include <yaml-cpp/yaml.h>
+#include <fstream>
 // ====== Directory Check and Create =======
 void dirChkCreate(const char* const directory, const char* const HR_directory)
 {
@@ -30,7 +32,7 @@ void dirChkCreate(const char* const directory, const char* const HR_directory)
 }
 
 // =========== Write Out Config ============
-void writeOutYaml(YAML::Node& yaml_config, const std::string& file)
+void writeOutYaml(YAML::Node &yaml_config, const std::string &file)
 {
 	std::ofstream fout(file);
 	fout << "%YAML 1.2\n---\n";				// print out yaml version string

@@ -23,7 +23,8 @@
 #include <map>
 #include <netinet/in.h>
 #include <openssl/md5.h>
-#include "parse-command.h"
+#include "parse-filetable.h"
+#include <queue>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,7 +37,7 @@
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
-enum action_t {FILETABLE, TRANSFER, REALTIME};
+typedef enum {FILETABLE, TRANSFER, REALTIME} action_t;
 
 // =========== Global Variables ===========
 int sfd;
@@ -110,7 +111,7 @@ void error_terminate(const int status) {
 }
 
 // =========== Handle Connection ===========
-void handle_connection()
+void handle_connection(action_t &action)
 {
 #if DEBUG
 	printf("Socketing... \n");
@@ -140,19 +141,18 @@ void handle_connection()
 		errno = 0;
 	}
 
-	action_t action = NONE;
-	std::string filename;
-	parse_command(sfd, action, filename);
+	if (filequeue.empty()) {
+		std::cout << "Filequeue is empty.  Checking for new files."
+			<< std::endl;
+		action = FILETABLE;
+	}
 
 	switch (action) {
-		case NONE:
-			std::cerr << "Uncaught faulty server." << std::endl;
-			exit(1);
-		break;
-		case RECIEVE: {
-#if DEBUG
-			std::cout << "output file: " << filename << std::endl;
-#endif // if DEBUG
+		case TRANSFER:
+		{
+			std::cout << "Front is: " << filequeue.front() << std::endl;
+			std::string filename(filequeue.front());
+			dprintf(sfd, "REQ: %s\n\n", filename.c_str());
 			FILE *output_file = fopen((BISON_RECIEVE_DIR + filename).c_str(),
 				"w");
 			if (output_file == 0)
@@ -166,16 +166,46 @@ void handle_connection()
 			}
 
 			fclose(output_file);
-		}
-		break;
-		case FILETABLE_REC: {
+		}	break;
+		case FILETABLE:
+		{
             const char *ret;
 			ret = update_filetable(BISON_RECIEVE_DIR, filetable);
 			if (ret) {
 				std::cerr << "Filetable did not update:" << ret << std::endl;
 				exit(1);
 			}
-		} break;
+			dprintf(sfd, "FTREQ\n\n");
+			std::map<std::string, std::vector<unsigned char>> tmp_filetable;
+			md5_parse(sfd, tmp_filetable);
+
+			if (!filequeue.empty())
+				std::cerr << "Filetable is not empty. Emptying." << std::endl;
+			while(!filequeue.empty())
+				filequeue.pop();
+
+			// check for files here that do not exist on our end
+			for (std::map<std::string, std::vector<unsigned char>>::iterator
+				it = tmp_filetable.begin(); it != tmp_filetable.end(); it++) {
+				std::map<std::string, std::vector<unsigned char>>::iterator
+					it2 = filetable.find(it->first);
+				// nonexistent file
+				if (it2 == filetable.end()) {
+					std::cout << "Missing: " << it->first << std::endl;
+					filequeue.push(it->first);
+					continue;
+				}
+				// handle incorrect / incomplete files
+				if (it2->second != it->second) {
+					std::cout << "Corrupt file: " << it->first << std::endl;
+					filequeue.push(it->first);
+					continue;
+				}
+			}
+			action = TRANSFER;
+		}	break;
+		case REALTIME:
+			break;
 	}
 	close(sfd);
 }
@@ -203,9 +233,10 @@ int main (int argc, char *argv[])
 	dirChkCreate(BISON_RECIEVE_DIR.c_str(), "recieve");
 
 	printf("Client Starting Up...\n");
+	action_t action = FILETABLE;
 
 	while(1) {
-		handle_connection();
+		handle_connection(action);
 	}
 	return 0;
 }

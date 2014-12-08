@@ -7,19 +7,18 @@
  */
 #ifndef __BISON_MD5_PARSE__
 #define __BISON_MD5_PARSE__
-void md5_parse(boost::circular_buffer_space_optimized<char> &buffer,
-	std::map<std::string, std::vector<unsigned char>> &tmp_filetable)
+void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
+	&tmp_filetable)
 {
 	std::vector<unsigned char> sum(16);
 	std::string filename;
 	int i = 0;
 	// each entry should be in the form of 
 	// (32 char md5 sum) (2 spaces) (a filename) (newline)
+	char c;
 	unsigned char tmp;
 	int termState = 0;
-	while (!(buffer.empty())) {
-		char c = buffer[0];
-		buffer.pop_front();
+	while (read(sfd, &c, 1) > 0) {
 		// process whitespaces
 		if (c == '\n') {
 			// okay, time to end the parsing
