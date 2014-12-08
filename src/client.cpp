@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 #include "BISON-Defaults.h"
 #include <boost/filesystem.hpp>
-#include "directory-check.h"
+#include "config-check.h"
 #include <dirent.h>
 #include <errno.h>
 #include <exception>
@@ -33,11 +33,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "update-filetable.h"
+#include "filetable.h"
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
-typedef enum {FILETABLE, TRANSFER, REALTIME} action_t;
+typedef enum {FILETABLE, TRANSFER, REALTIME, RECALCULATE_MD5} action_t;
 
 // =========== Global Variables ===========
 int sfd;
@@ -45,6 +45,7 @@ std::string BISON_TRANSFER_SERVER;
 int BISON_TRANSFER_PORT;
 std::string BISON_RECIEVE_DIR;
 std::queue<std::string> filequeue;
+std::queue<std::string> recalc_queue;
 std::map<std::string, std::vector<unsigned char>> filetable;
 
 // ============ Configuration ==============
@@ -147,6 +148,12 @@ void handle_connection(action_t &action)
 		action = FILETABLE;
 	}
 
+	if (!recalc_queue.empty()) {
+		std::cout << "Recalculation queue is not empty. Relaying filenames."
+			<< std::endl;
+		action = RECALCULATE_MD5;
+	}
+
 	switch (action) {
 		case TRANSFER:
 		{
@@ -199,6 +206,7 @@ void handle_connection(action_t &action)
 				// handle incorrect / incomplete files
 				if (it2->second != it->second) {
 					std::cout << "Corrupt file: " << it->first << std::endl;
+					recalc_queue.push(it->first);
 					filequeue.push(it->first);
 					continue;
 				}
@@ -207,6 +215,13 @@ void handle_connection(action_t &action)
 		}	break;
 		case REALTIME:
 			break;
+		case RECALCULATE_MD5:
+		{
+			std::string filename = recalc_queue.front();
+			recalc_queue.pop();
+			dprintf(sfd, "RECALC: %s\n\n", filename.c_str());
+			recalculate_MD5(BISON_RECIEVE_DIR, filename, filetable);
+		}	break;
 	}
 	close(sfd);
 }

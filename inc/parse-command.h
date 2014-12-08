@@ -1,7 +1,7 @@
 #ifndef __BISON_ACTION_PARSER__
 #define __BISON_ACTION_PARSER__
 
-typedef enum {NONE, SEND, FILETABLE_REQ} action_t;
+typedef enum {NONE, SEND, FILETABLE_REQ, RECALCULATE_MD5} action_t;
 
 void parse_command(int sfd, action_t &action, std::string &filename)
 {
@@ -32,22 +32,6 @@ void parse_command(int sfd, action_t &action, std::string &filename)
 				++since_last_newline;
 				continue;
 			}
-		} else if (count == 0 && c == 'F') {
-			count = 6;
-			continue;
-		} else if (count == 6 && c == 'T') {
-			++count;
-			continue;
-		} else if (count == 7 && c == 'R') {
-			++count;
-			continue;
-		} else if (count == 8 && c == 'E') {
-			++count;
-			continue;
-		} else if (count == 9 && c == 'Q') {
-			++count;
-			action = FILETABLE_REQ;
-			continue;
 		} else if (count == 0 && c == 'R') {
             ++count;
             continue;
@@ -64,7 +48,43 @@ void parse_command(int sfd, action_t &action, std::string &filename)
             ++count;
 			action = SEND;
             continue;
-        } else if (action == SEND && count == 5) {
+		} else if (count == 0 && c == 'F') {
+			count = 6;
+			continue;
+		} else if (count == 6 && c == 'T') {
+			++count;
+			continue;
+		} else if (count == 7 && c == 'R') {
+			++count;
+			continue;
+		} else if (count == 8 && c == 'E') {
+			++count;
+			continue;
+		} else if (count == 9 && c == 'Q') {
+			++count;
+			action = FILETABLE_REQ;
+			continue;
+		} else if (count == 2 && c == 'C') {
+			count = 11;
+			continue;
+		} else if (count == 11 && c == 'A') {
+			count++;
+			continue;
+		} else if (count == 12 && c == 'L') {
+			count++;
+			continue;
+		} else if (count == 13 && c == 'C') {
+			count++;
+			continue;
+		} else if (count == 14 && c == ':') {
+			count++;
+			continue;
+		} else if (count == 15 && c == ' ') {
+			count++;
+			action = RECALCULATE_MD5;
+			continue;
+        } else if ((action == SEND && count == 5)||(action == RECALCULATE_MD5 
+			&& count == 16)) {
             filename.push_back(c);
 		    since_last_newline = -1;
         } else {

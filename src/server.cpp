@@ -16,7 +16,7 @@
 #include "BISON-Defaults.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
-#include "directory-check.h"
+#include "config-check.h"
 #include <dirent.h>
 #include <errno.h>
 #include <exception>
@@ -34,7 +34,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "update-filetable.h"
+#include "filetable.h"
 #include <vector>
 #include <yaml-cpp/yaml.h>
 
@@ -169,6 +169,9 @@ void child_function(int cfd)
 		}	break;
 		case FILETABLE_REQ:
 			send_filetable(cfd);
+			break;
+		case RECALCULATE_MD5:
+			recalculate_MD5(BISON_TRANSFER_DIR, filename, filetable);
 			break;
 	}
 }
