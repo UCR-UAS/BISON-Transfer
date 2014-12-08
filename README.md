@@ -1,19 +1,3 @@
-Brandon Branch Info
-===================
-This is a large rewrite of the server for a large amount of forking and
-increased reliability of the entire system.  Bear with it for now.
-
-I am rewriting a large portion of the codebase in my branch because it is
-necessary in order to completely transition over into C++ from the original
-C server.  Although it was the original design intent for the server to be in
-C in order to make the server more portable, it has become massively easier 
-to develop in C++ -- especially with the advent of the Boost:: C++ libraries.
-
-Beautiful C is perhaps easier than creating beautiful C++.  It is hard to
-create beautiful C++ because there are so many concepts to integrate into the
-code at the same time, and syntax and semantics takes up most of the code.
-(Albeit, the code has less lines to debug.)
-
 BISON-Transfer
 ==============
 
@@ -68,7 +52,6 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * Communication model re-creation
  * REALTIME mode implementation
  * Preforking and other client-handling insanity
  * -HUP reload (test not done, should be done in server)
@@ -80,6 +63,7 @@ TODO List (by order of implementation)
 
 Preforking and other client-handling insanity
 ---------------------------------------------
+ * Corrupt file handling implementation improvement
  * Shared filetable memory
  * Minimum server number
  * Move filetable handling to client
