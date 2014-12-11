@@ -23,7 +23,7 @@
 #include <map>
 #include <netinet/in.h>
 #include <openssl/md5.h>
-#include "parse-filetable.h"
+#include "filetable.h"
 #include <queue>
 #include <signal.h>
 #include <stdlib.h>
@@ -47,6 +47,7 @@ std::string BISON_RECIEVE_DIR;
 std::queue<std::string> filequeue;
 std::queue<std::string> recalc_queue;
 std::map<std::string, std::vector<unsigned char>> filetable;
+YAML::Node config;
 
 // ============ Configuration ==============
 /*
@@ -226,9 +227,16 @@ void handle_connection(action_t &action)
 	close(sfd);
 }
 
+// ======= Configuration Reloading ========
+void configuration_reload(int sig)
+{
+	configure_client(config);
+}
+
 // =========== Signal Handling =============
 void signalHandling()
 {
+	signal (SIGHUP, configuration_reload);
 	signal(SIGCHLD, SIG_IGN);				// ignore children for now
 	// Handle different ways of program termination
 	signal(SIGTERM, terminate_nicely);
@@ -239,7 +247,6 @@ void signalHandling()
 // ========== The Main Function ============
 int main (int argc, char *argv[])
 {
-	YAML::Node config;
 	configure_client(config);
 
 	// Insert PID file management stuff here

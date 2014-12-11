@@ -7,10 +7,7 @@
  */
 
 // ================= TODO =================
-// Actually keep track of clients
-// Actually log and -HUP support
-// Debugging times
-// Debugging levels
+// Read the Trello cards.  (You can be added if you ask!)
 
 // =============== Includes ===============
 #include "BISON-Defaults.h"
@@ -47,6 +44,7 @@ std::string BISON_TRANSFER_DIR;
 int argC;
 char **argV;
 std::map<std::string, std::vector<unsigned char>> filetable;
+YAML::Node config;
 
 // ============ Configuration ==============
 void configure_server(YAML::Node &config)
@@ -214,7 +212,8 @@ void handle_connection()
 void handle_children()
 {
 	// I accidentally took all the pipes out, so I'll have to reimplement -
-	// them for logging.
+	// them for logging... or better yet, I can just have the server listen -
+	// on a socket!
 }
 
 // ======= Nice Termination handler =======
@@ -233,9 +232,16 @@ void error_terminate(const int status)
 	exit(status);
 }
 
+// ======= Configuration Reloading ========
+void configuration_reload(int sig)
+{
+	configure_server(config);
+}
+
 // =========== Signal Handling ============
 void signalHandling()
 {
+	signal(SIGHUP, configuration_reload);
 	signal(SIGTERM, terminate_nicely);
 	signal(SIGINT, terminate_nicely);
 	signal(SIGCHLD, SIG_IGN);				// IGNORE YOUR CHILDREN.
@@ -244,7 +250,6 @@ void signalHandling()
 // ========== The Main Function ============
 int main (int argc, char *argv[])
 {
-	YAML::Node config;
 	configure_server(config);
 
 	signalHandling();
