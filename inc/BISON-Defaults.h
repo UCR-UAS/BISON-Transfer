@@ -19,6 +19,7 @@ const char DEF_RECIEVE_DIR[] = "var/run/BISON/recieve/";
 #define DEF_BISON_TRANSFER_PORT (6673)		// ascii "BI"
 #define DEF_BISON_TRANSFER_SERVER ("127.0.0.1")
 #define DEF_BISON_TRANSFER_BIND ("0.0.0.0")
+#define DEF_ERROR_WAIT (1000)
 #define MAXBUFLEN (255)
 
 // ============ Error Messages ============
