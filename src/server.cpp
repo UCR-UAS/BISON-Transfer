@@ -99,7 +99,7 @@ void configure_server(YAML::Node &config)
 }
 
 // ========= Connection Management =========
-void prepare_connection()
+int prepare_connection()
 {
 	struct sockaddr_in my_addr;
 
@@ -108,8 +108,11 @@ void prepare_connection()
 	printf("Socketing...\n");
 #endif // if DEBUG
 	sfd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-	if (sfd == -1)
-		crit_error("Socket");
+	if (sfd == -1) {
+		std::cerr << "Could not create socket." << std::endl;
+		errno = 0;
+		return 1;
+	}
 
 	// set things for bind
 	memset (&my_addr, 0, sizeof(struct sockaddr));
@@ -121,12 +124,18 @@ void prepare_connection()
 	printf("Binding...\n");
 #endif // if DEBUG
 	if (bind(sfd, (struct sockaddr*) &my_addr, sizeof(struct sockaddr_in))
-			== -1)
-		crit_error("Bind Failed");
+			== -1) {
+		std::cerr << "Could not bind to socket." << std::endl;
+		errno = 0;
+		return 2;
+	}
 
 	// listen for connections
-	if (listen(sfd, MAX_BACKLOG) == -1)
-		crit_error("listen");
+	if (listen(sfd, MAX_BACKLOG) == -1) {
+		std::cerr << "Could not listen to socket." << std::endl;
+		errno = 0;
+		return 3;
+	}
 }
 
 // ============ Send Filetable =============
@@ -187,8 +196,6 @@ void handle_connection()
 		// executes (and we simply catch the error and ignore it)
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
 			errno = 0;						// There is no error...
-			usleep(5000);					// wait a bit so that we won't -
-			// overload the system
 			return;
 		}
 		else
@@ -274,9 +281,10 @@ int main (int argc, char *argv[])
 		const char* ret = update_filetable(BISON_TRANSFER_DIR, filetable);
 		if (ret) {
 			std::cerr << "Error on filetable update: " << ret << std::endl;
-			exit(1);
 		}
 		handle_connection();
+		usleep(5000);					// wait a bit so that we won't -
+		// overload the system
 	}
 
 	return 0;
