@@ -85,8 +85,7 @@ void configure_client(YAML::Node &config)
 	BISON_TRANSFER_PORT = config["BISON-Transfer"]["Client"]["Port"].as<int>();
 	BISON_RECIEVE_DIR = config["BISON-Transfer"]["Client"]["Recieve-Dir"]
 		.as<std::string>();
-	ERROR_WAIT = config["BISON-Transfer"]["Client"]["Error-Wait"]
-		.as<std::string>();
+	ERROR_WAIT = config["BISON-Transfer"]["Client"]["Error-Wait"].as<int>();
 
 	if (DEBUG) {
 		std::cout << "Transfer Address (for binding): "

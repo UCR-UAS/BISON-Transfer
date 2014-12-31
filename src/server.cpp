@@ -41,6 +41,7 @@ int MAX_BACKLOG;
 std::string BISON_TRANSFER_ADDRESS;
 int BISON_TRANSFER_PORT;
 std::string BISON_TRANSFER_DIR;
+int ERROR_WAIT;
 int argC;
 char **argV;
 std::map<std::string, std::vector<unsigned char>> filetable;
@@ -70,6 +71,8 @@ void configure_server(YAML::Node &config)
 		config["BISON-Transfer"]["Server"]["Max-Backlog"] = DEF_MAX_BACKLOG;
 	if (!config["BISON-Transfer"]["Server"]["Transmit-Dir"])
 		config["BISON-Transfer"]["Server"]["Transmit-Dir"] = DEF_TRANSMIT_DIR;
+	if (!config["BISON-Transfer"]["Server"]["Error-Wait"])
+		config["BISON-Transfer"]["Server"]["Error-Wait"] = DEF_ERROR_WAIT;
 
 	// set file variables to the yaml configuration variables
 	BISON_TRANSFER_ADDRESS
@@ -78,6 +81,7 @@ void configure_server(YAML::Node &config)
 	MAX_BACKLOG = config["BISON-Transfer"]["Server"]["Max-Backlog"].as<int>();
 	BISON_TRANSFER_DIR 
 		= config["BISON-Transfer"]["Server"]["Transmit-Dir"].as<std::string>();
+	ERROR_WAIT = config["BISON-Transfer"]["Server"]["Error-Wait"].as<int>();
 
 	// if we are debugging, output the debug information
 	if (DEBUG) {
@@ -136,6 +140,8 @@ int prepare_connection()
 		errno = 0;
 		return 3;
 	}
+
+	return 0;
 }
 
 // ============ Send Filetable =============
@@ -270,7 +276,13 @@ int main (int argc, char *argv[])
 
 	// Insert PID file management stuff here
 
-	prepare_connection();
+	// keep on preparing the connection until it is prepared.
+	while (1) {
+		if (!prepare_connection())
+			break;
+		for (int i = 0; i < ERROR_WAIT, i++)
+			ulseep(1000);
+	}
 
 #if DEBUG
 	printf("Server ready, waiting for connection.\n");
