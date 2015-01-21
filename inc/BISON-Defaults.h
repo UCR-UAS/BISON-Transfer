@@ -8,10 +8,10 @@
  */
 
 // ================ Defines ================
-const char __DEF_SERVER_CONFIG_PATH__[] = "etc/BISON/";
+const char __DEF_SERVER_CONFIG_PATH__[] = "/etc/BISON/";
 const char __DEF_SERVER_CONFIG_FILE__[] = "transfer_server_config.yaml";
 const char DEF_TRANSMIT_DIR[] = "var/run/BISON/transmit/";
-const char __DEF_CLIENT_CONFIG_PATH__[] = "etc/BISON/";
+const char __DEF_CLIENT_CONFIG_PATH__[] = "/etc/BISON/";
 const char __DEF_CLIENT_CONFIG_FILE__[] = "transfer_client_config.yaml";
 const char DEF_RECIEVE_DIR[] = "var/run/BISON/recieve/";
 #define DEBUG (1)

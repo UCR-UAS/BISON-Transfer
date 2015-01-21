@@ -280,8 +280,8 @@ int main (int argc, char *argv[])
 	while (1) {
 		if (!prepare_connection())
 			break;
-		for (int i = 0; i < ERROR_WAIT, i++)
-			ulseep(1000);
+		for (int i = 0; i > ERROR_WAIT; i++)
+			usleep(1000);
 	}
 
 #if DEBUG

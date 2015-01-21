@@ -64,7 +64,37 @@ TODO List (by order of implementation)
 Preforking and other client-handling insanity
 ---------------------------------------------
  * Corrupt file handling implementation improvement
- * Shared filetable memory
  * Minimum server number
  * Move filetable handling to client
  * Maximum connections before quit on forked
+
+How to use BISON Transfer in its preliminary standalone mode
+------------------------------------------------------------
+BISON is configured to feel a lot like a normal Linux daemon.
+
+What does Brandon define as a normal BISON daemon?
+Configuration files are stored in the `\etc` directory.
+Variable data is stored in `/var`.
+
+So how exactly does one use BISON-Transfer?
+
+BISON-Transfer is mostly self-configuring (although BISON-Master is supposed
+to do this automatically.)
+If you want, it is possible to supplement your own configuration by changing
+the configuration file that results out of the self-configuration phase from
+one run of the server.  (Or by modifying a previously generated configuration
+file)
+
+The configuration variables, in Brandon's opinion, are aptly named and should
+be fairly intuitive.
+
+In order to queue files to be sent to the destination server, one must put
+files into the transmit directory.  This is the same directory that is defined
+in the configuration file.
+
+It is possible for multiple recievers to connect to one sender, and it is only
+possible for multiple senders to connect to one reciever if the file names
+within the transmit directory do not coincide.  Having files with the same
+name within two different transitters to the same recieve directory will
+result in a condition where one file continually does not synchronize
+correctly.
