@@ -2,7 +2,7 @@ CPP=g++
 CPPFLAGS=-Wall -ggdb `pkg-config --cflags --libs openssl` -std=c++0x `pkg-config --libs yaml-cpp` -lboost_filesystem -lboost_system -iquote inc/
 BINARY_DIR=bin/
 INCLUDE_DIR=inc/
-SOURCES=BISON-Transfer-server.cpp BISON-Transfer-client.cpp
+SOURCES=BISON-Transferd.cpp BISON-Transfer.cpp
 SOURCES_DIR=src/
 SOURCES_CPP=$(addprefix $(SOURCES_DIR),$(SOURCES))
 INCLUDES-F=BISON-Defaults.h filetable.h config-check.h parse-command.h

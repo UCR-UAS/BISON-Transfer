@@ -72,6 +72,9 @@ How to use BISON Transfer in its preliminary standalone mode
 ------------------------------------------------------------
 BISON is configured to feel a lot like a normal Linux daemon.
 
+BISON-Transferd is the daemon that runs on the plane.
+BISON-Transfer is the client that is run on the server at ground.
+
 What does Brandon define as a normal BISON daemon?
 Configuration files are stored in the `\etc` directory.
 Variable data is stored in `/var`.
