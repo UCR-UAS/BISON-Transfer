@@ -15,41 +15,42 @@
 const char *recalculate_MD5(const std::string path, const std::string &name,
 	std::map<std::string, std::vector<unsigned char>> &filetable)
 {
-		std::vector<unsigned char> sum(16);	// for the MD5 sum storage
-        char c[4096];						// sorry I use the same temporary -
-											// for everything.
-		strcpy(c, path.c_str());
-		strcat(c, name.c_str());	// concatenate to full system path
+	std::vector<unsigned char> sum(16);	// for the MD5 sum storage
+	char c[4096];						// sorry I use the same temporary -
+										// for everything.
+	strcpy(c, path.c_str());
+	strcat(c, name.c_str());	// concatenate to full system path
 
-		FILE *fp = fopen(c, "r");
-		if (!fp)
-			return "Could not open file in directory!";
+	FILE *fp = fopen(c, "r");
+	if (!fp)
+		return "Could not open file in directory!";
 
-		char buf[MAXBUFLEN + 1];
+	char buf[MAXBUFLEN + 1];
 
-		MD5_CTX md5_structure;
-		if (!MD5_Init(&md5_structure))
-			return "Could not initialize MD5";
+	MD5_CTX md5_structure;
+	if (!MD5_Init(&md5_structure))
+		return "Could not initialize MD5";
 
-		while (!feof(fp)) {
-			size_t newLen = fread(buf, sizeof(char), MAXBUFLEN, fp);
-			if (!newLen && errno) {
-				return "Could not read from file";
-			}
-			buf[newLen + 1] = '\0';
-			if (!MD5_Update(&md5_structure, buf, newLen))
-				return "Could not update MD5 checksum";
+	while (!feof(fp)) {
+		size_t newLen = fread(buf, sizeof(char), MAXBUFLEN, fp);
+		if (!newLen && errno) {
+			return "Could not read from file";
 		}
-		fclose(fp);
+		buf[newLen + 1] = '\0';
+		if (!MD5_Update(&md5_structure, buf, newLen))
+			return "Could not update MD5 checksum";
+	}
+	fclose(fp);
 
-		if(!MD5_Final(sum.data(), &md5_structure))
-			return "Could not generate final MD5 checksum";
+	if(!MD5_Final(sum.data(), &md5_structure))
+		return "Could not generate final MD5 checksum";
 
-		filetable.insert(std::pair<std::string, std::vector<unsigned char>>
-			(name, sum));
+	filetable.insert(std::pair<std::string, std::vector<unsigned char>>
+		(name, sum));
 
-		return 0;
+	return 0;
 }
+
 
 const char *update_filetable (const std::string path, std::map<std::string,
 std::vector<unsigned char>> &filetable)

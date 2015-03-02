@@ -3,10 +3,19 @@
 
 typedef enum {NONE, SEND, FILETABLE_REQ, RECALCULATE_MD5} action_t;
 
+/*
+	This is the parser for server commands.
+	The following are valid strings for this parser:
+		"REQ: *" - Requests a file where * represents the filename.
+		"FTREQ"	 - Requests the filetable.
+		"RECALC: *" - Requests to recalculate the MD5 sum of a file
+			(in case something bad happened).
+*/
+
 void parse_command(int sfd, action_t &action, std::string &filename)
 {
 	int since_last_newline = -1;
-    int count = 0;
+	int count = 0;
 	char c;
 	// Excuse the ugly, difficult parser.
 	while(1) {
