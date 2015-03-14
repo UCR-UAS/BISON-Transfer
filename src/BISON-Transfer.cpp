@@ -192,9 +192,19 @@ void handle_connection(action_t &action)
 			// Write the data into the output file which was opened earlier.
 			char buf[MAXBUFLEN + 1];
 			int len = 0;
-			while((len = read(sfd, buf, MAXBUFLEN)) > 0) {
-											// Now works with binary!
+            // file descriptor set for writing to file
+            fd_set set;
+            FD_SET(sfd, &set);
+            struct timeval timeout;
+            timeout.tv_sec = 30;
+            timeout.tv_usec = 0;
+			while(select(sfd+1, &set, NULL, NULL, &timeout) != 0) {
+                len = read(sfd, buf, MAXBUFLEN);
+                if (len == 0)
+                    break;
 				fwrite(buf, sizeof(char), len, output_file);
+                timeout.tv_sec = 30;
+                timeout.tv_usec = 0;
 			}
 
 			// Close the file, of course.

@@ -17,8 +17,26 @@ void parse_command(int sfd, action_t &action, std::string &filename)
 	int since_last_newline = -1;
 	int count = 0;
 	char c;
+    fd_set set;
 	// Excuse the ugly, difficult parser.
+    FD_SET(sfd, &set);
 	while(1) {
+        // set timeout
+        struct timeval timeout;
+        timeout.tv_sec = 30;
+        timeout.tv_usec = 0;
+
+        int select_return = select(sfd+1, &set, NULL, NULL, &timeout);
+        if (select_return < 0) {
+            std::cerr << "Error doing things." << std::endl;
+            perror(NULL);
+            exit(1);
+        }
+        if (select_return ==0) {
+            std::cerr << "Timeout!" << std::endl;
+            exit(1);
+        }
+
 		if(read(sfd, &c, 1) < 1) {
 			std::cerr << "Could not read from file descriptor.Is this the end?" 
 				<< std::endl;

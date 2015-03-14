@@ -15,6 +15,7 @@ const char __DEF_CLIENT_CONFIG_PATH__[] = "etc/BISON/";
 const char __DEF_CLIENT_CONFIG_FILE__[] = "transfer_client_config.yaml";
 const char DEF_RECIEVE_DIR[] = "var/run/BISON/recieve/";
 #define DEBUG (1)
+#define DEF_ERROR_WAIT (1)
 #define DEF_MAX_BACKLOG (30)
 #define DEF_BISON_TRANSFER_PORT (6673)		// ascii "BI"
 #define DEF_BISON_TRANSFER_SERVER ("127.0.0.1")

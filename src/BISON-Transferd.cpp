@@ -111,7 +111,7 @@ int prepare_connection()
 #if DEBUG
 	printf("Socketing...\n");
 #endif // if DEBUG
-	sfd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	sfd = socket(PF_INET, SOCK_STREAM, 0);
 	if (sfd == -1) {
 		std::cerr << "Could not create socket." << std::endl;
 		errno = 0;
@@ -198,14 +198,7 @@ void handle_connection()
 	// Wait to accept connection
 	cfd = accept(sfd, NULL, NULL);
 	if (cfd == -1) {
-		// this is a nonblocking function, so it will give us an error when it-
-		// executes (and we simply catch the error and ignore it)
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			errno = 0;						// There is no error...
-			return;
-		}
-		else
-			crit_error("Could not accept connections");
+		crit_error("Could not accept connections");
 	}
 
 	pid = fork();
