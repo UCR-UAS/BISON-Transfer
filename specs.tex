@@ -38,27 +38,38 @@
 \begin{document}
 \maketitle
 \section{Introduction}
-This document describes the BISON-Transfer server and client suite's methods
-of communication.  If it is not clear by this point, the server (or daemon)
+This document describes the BISON-Transfer server and client suite's purpose,
+implementation, and methods of communication.
+If it is not clear by this point, the server (or daemon)
 is called \verb+BISON-Transferd+ and the client (client daemon, to be precise)
 is called \verb+BISON-Transfer+.
 
-At initialization, the transfer server fork is in an unknown state.  It must
-recieve a \hyperref[sec:Transfer Modes]{transfer mode} from the client or it
-will not know what to
-do and will terminate.
-After it has recieved a \hyperref[sec:Transfer Modes]{transfer mode}, it can
-then proceed to either \hyperref[ssec:Request File]{send the file},
-\hyperref[ssec:Request Filetable]{send the filetable},
-or \hyperref[ssec:Recalculate MD5]
-{recalculate and then send the md5 sum} of a file. 
+\section{Specifications}
+The BISON-Transfer suite is (hopefully) designed to operate within the
+following constraints:
+\begin{itemize}
+	\item Timely image transfer
+	\item Robust communications (disconnect handling)
+	\item Efficient transfer protocol
+\end{itemize}
 
 \tableofcontents
 
+\section{Communication}
+At initialization, the transfer server fork is in an unknown state.  It must
+recieve a \hyperref[sec:transfer_modes]{transfer mode} from the client or it
+will not know what to
+do and will terminate.
+After it has recieved a \hyperref[sec:transfer_modes]{transfer mode}, it can
+then proceed to either \hyperref[sec:request_file]{send the file},
+\hyperref[sec:request_filetable]{send the filetable},
+or \hyperref[sec:recalculate_MD5]
+{recalculate and then send the md5 sum} of a file. 
+
 \section{Transfer Modes}
-\label{sec:Transfer Modes}
+\label{sec:transfer_modes}
 There are four transfer modes that have been (or will be) implemented.
-These are presented in tabular form in figure below.
+These are presented in tabular form in \ref{fig:transfer_modes}.
 \begin{figure}[H]
 	\centering
 	\begin{tabular}{r l}
@@ -68,8 +79,8 @@ These are presented in tabular form in figure below.
 		\verb+RECALC:+\textvisiblespace <filename>\carriagereturn
 		\carriagereturn & Request MD5 Recalculation
 	\end{tabular}
-	\label{fig:Transfer Modes}
 	\caption{Transfer Modes for the BISON-Transfer suite}
+	\label{fig:transfer_modes}
 \end{figure}
 
 Please note that the (\carriagereturn) character is meant to represent ASCII
@@ -83,49 +94,54 @@ It should also be noted that the <filename> should be entirely replaced with
 the corresponding filename that is going to be transferred.
 
 \subsection{File Request}
-\label{ssec:Request File}
+\label{sec:request_file}
 The file request mode is signified by the client querying the server for the
-file by providing the following line.
-\begin{figure}{H}
+file by providing the command in figure~\ref{fig:request_file}.
+\begin{figure}[H]
 	\centering
 	\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
 	\caption{Request File Mode}
+	\label{fig:request_file}
 \end{figure}
 
 The server, after recieving this line, will provide the corresponding file in
 unencrypted binary over the port.
 
 \subsection{Filetable Request}
-\label{ssec:Request Filetable}
+\label{sec:request_filetable}
 The client requests the filetable using the following line:
-\begin{figure}{H}
+\begin{figure}[H]
 	\centering
 	\verb+FTREQ+\carriagereturn\carriagereturn
 	\caption{Filetable Request Mode}
+	\label{fig:request_filetable}
 \end{figure}
 
 The filetable format is done by line, and files are not expected to have
-newlines in their names.
-\begin{figure}{H}
+newlines in their names.  The format is provided in figure~
+\ref{fig:mdfive_format}.
+\begin{figure}[H]
 	\centering
 	<MD5 SUM (32 hex-representing ASCII characters)>\textvisiblespace
 	\textvisiblespace<filename>\carriagereturn
 	\caption{MD5 Sum and Filename Specification}
+	\label{fig:mdfive_format}
 \end{figure}
 
 The last line of the filetable will have a newline as well.  This is followed
 by the server terminating the connection.
 
 \subsection{Request Filetable Recalculation}
-\label{ssec:Recalculate MD5}
+\label{sec:recalculate_MD5}
 Ideally, this specific transfer mode is never used because it signifies an
 error either in transmitting the filetable or calculating the
 \href{http://en.wikipedia.org/wiki/Md5sum}{MD5 Sum} on the transfer server.
 The client requests a filetable recalculation using the following line:
-\begin{figure}{H}
+\begin{figure}[H]
 	\centering
 	\verb+RECALC:+\textvisiblespace <filename>\carriagereturn\carriagereturn
 	\caption{Request Recalculation}
+	\label{fig:recalculate_request}
 \end{figure}
 
 This makes the server recalculate the MD5 sum of a specific file and not the
@@ -141,7 +157,7 @@ Ideally, a solution to this would be to recalculate the MD5 sum when the
 To be written.
 
 \section{Security}
-\label{sec:Security}
+\label{sec:security}
 In a closed-system, security is not generally considered for simplicity sake.
 This is not a system designed for large-scale deployment by any means.
 It is designed to work for its designated purpose, and only that purpose.
@@ -154,14 +170,14 @@ But considering security for the heck of it is an interesting topic in general.
 This is especially true when it comes to code-masochists like the author.
 
 \subsection{Filenames}
-\label{ssec:Filenames}
+\label{sec:filenames}
 Filenames should not contain newlines for sanity sake.
 
 A file with a newline will cause the program to either reject the file or
 exit on error condition.
 
 \subsection{Random Characters}
-\label{ssec:Random Characters}
+\label{sec:random_characters}
 Random characters from the server under file transfer mode can potentially
 cause the BISON-Transfer daemon to overload the filesystem on the client side.
 This issue is not addressed because it will not happen unless an unsafe server
@@ -174,7 +190,7 @@ It is noted that the client does not reject random characters from the server
 before it issues a command.  This may or may not be resolved at a later date.
 
 \section{Performance}
-\label{sec:Performance}
+\label{sec:performance}
 Transfer overhead is fairly low, and mostly depends on underlying hardware and
 TCP/IP stack.
 
