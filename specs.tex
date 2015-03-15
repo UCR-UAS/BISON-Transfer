@@ -59,7 +59,7 @@ or \hyperref[ssec:Recalculate MD5]
 \label{sec:Transfer Modes}
 There are four transfer modes that have been (or will be) implemented.
 These are presented in tabular form in figure below.
-\begin{figure}[h!]
+\begin{figure}[H]
 	\centering
 	\begin{tabular}{r l}
 		\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
@@ -86,11 +86,10 @@ the corresponding filename that is going to be transferred.
 \label{ssec:Request File}
 The file request mode is signified by the client querying the server for the
 file by providing the following line.
-
-\begin{figure}{h!}
+\begin{figure}{H}
 	\centering
 	\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
-	\label{Request File Mode}
+	\caption{Request File Mode}
 \end{figure}
 
 The server, after recieving this line, will provide the corresponding file in
@@ -99,21 +98,19 @@ unencrypted binary over the port.
 \subsection{Filetable Request}
 \label{ssec:Request Filetable}
 The client requests the filetable using the following line:
-
-\begin{figure}{h!}
+\begin{figure}{H}
 	\centering
 	\verb+FTREQ+\carriagereturn\carriagereturn
-	\label{Filetable Request Mode}
+	\caption{Filetable Request Mode}
 \end{figure}
 
 The filetable format is done by line, and files are not expected to have
 newlines in their names.
-
-\begin{figure}{h!}
+\begin{figure}{H}
 	\centering
 	<MD5 SUM (32 hex-representing ASCII characters)>\textvisiblespace
 	\textvisiblespace<filename>\carriagereturn
-	\label{MD5 Sum and Filename Specification}
+	\caption{MD5 Sum and Filename Specification}
 \end{figure}
 
 The last line of the filetable will have a newline as well.  This is followed
@@ -125,11 +122,10 @@ Ideally, this specific transfer mode is never used because it signifies an
 error either in transmitting the filetable or calculating the
 \href{http://en.wikipedia.org/wiki/Md5sum}{MD5 Sum} on the transfer server.
 The client requests a filetable recalculation using the following line:
-
-\begin{figure}{h!}
+\begin{figure}{H}
 	\centering
 	\verb+RECALC:+\textvisiblespace <filename>\carriagereturn\carriagereturn
-	\label{Request Recalculation}
+	\caption{Request Recalculation}
 \end{figure}
 
 This makes the server recalculate the MD5 sum of a specific file and not the
