@@ -53,6 +53,7 @@ transfer server daemon to reload its files.
 TODO List (by order of implementation)
 ---------------------------------------
  * Implement timeouts
+ * Implement returned exceptions
  * REALTIME mode implementation
  * Preforking and other client-handling insanity
  * -HUP reload (test not done, should be done in server)

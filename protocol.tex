@@ -10,12 +10,26 @@
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{verbatim}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \setlength{\parindent}{15pt}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{textcomp}
 \usepackage{dingbat}
+\usepackage{float}
+\usepackage[framemethod=tikz]{mdframed}
+
+\mdfdefinestyle{IEEEBlueStyle}{roundcorner=10pt, tikzsetting={draw=cyan, line width=1pt}}
+
+\makeatletter
+  \newcommand\fs@IEEEBlue{\def\@fs@cfont{\bfseries}\let\@fs@capt\floatc@plain
+	\def\@fs@pre{\begin{mdframed}[style=IEEEBlueStyle]}%
+	\def\@fs@mid{\end{mdframed}\vspace{\abovecaptionskip}}%
+	\def\@fs@post{}%
+	\let\@fs@iftopcapt\iffalse}
+\makeatother
+
+\floatstyle{IEEEBlue}
+\restylefloat{figure}
 
 \author{Brandon Lu @ UCR UAS}
 \title{BISON-Transfer Protocol Explained}
@@ -33,7 +47,6 @@ At initialization, the transfer server fork is in an unknown state.  It must
 recieve a \hyperref[sec:Transfer Modes]{transfer mode} from the client or it
 will not know what to
 do and will terminate.
-
 After it has recieved a \hyperref[sec:Transfer Modes]{transfer mode}, it can
 then proceed to either \hyperref[ssec:Request File]{send the file},
 \hyperref[ssec:Request Filetable]{send the filetable},
@@ -44,8 +57,10 @@ or \hyperref[ssec:Recalculate MD5]
 
 \section{Transfer Modes}
 \label{sec:Transfer Modes}
-There are three transfer modes that have been (or will be) implemented:
-\begin{center}
+There are four transfer modes that have been (or will be) implemented.
+These are presented in tabular form in figure below.
+\begin{figure}[h!]
+	\centering
 	\begin{tabular}{r l}
 		\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
 		& File Request\\
@@ -53,13 +68,16 @@ There are three transfer modes that have been (or will be) implemented:
 		\verb+RECALC:+\textvisiblespace <filename>\carriagereturn
 		\carriagereturn & Request MD5 Recalculation
 	\end{tabular}
-\end{center}
+	\label{fig:Transfer Modes}
+	\caption{Transfer Modes for the BISON-Transfer suite}
+\end{figure}
 
-Please note that the \carriagereturn character is meant to represent ASCII
+Please note that the (\carriagereturn) character is meant to represent ASCII
 newline (decimal \verb+10+, hexadecimal \verb+0x0A+).  The
 visible space (\textvisiblespace) is meant to notate an ASCII space (decimal
 \verb+32+, hexadecimal \verb+0x20+).
-It is simply convenient to have these symbols explicitly stated.
+It is simply convenient to have these symbols explicitly represented in order
+to avoid confusion.
 
 It should also be noted that the <filename> should be entirely replaced with
 the corresponding filename that is going to be transferred.
@@ -69,8 +87,10 @@ the corresponding filename that is going to be transferred.
 The file request mode is signified by the client querying the server for the
 file by providing the following line.
 
-\noindent
-\verb+REQ+:\textvisiblespace <filename>\carriagereturn\carriagereturn
+\begin{center}
+	\noindent
+	\verb+REQ+:\textvisiblespace <filename>\carriagereturn\carriagereturn
+\end{center}
 
 The server, after recieving this line, will provide the corresponding file in
 unencrypted binary over the port.
@@ -79,15 +99,19 @@ unencrypted binary over the port.
 \label{ssec:Request Filetable}
 The client requests the filetable using the following line:
 
-\noindent
-\verb+FTREQ+\carriagereturn\carriagereturn
+\begin{center}
+	\noindent
+	\verb+FTREQ+\carriagereturn\carriagereturn
+\end{center}
 
 The filetable format is done by line, and files are not expected to have
 newlines in their names.
 
-\noindent
-<MD5 SUM (32 hex-representing ASCII characters)>\textvisiblespace
-\textvisiblespace<filename>\carriagereturn
+\begin{center}
+	\noindent
+	<MD5 SUM (32 hex-representing ASCII characters)>\textvisiblespace
+	\textvisiblespace<filename>\carriagereturn
+\end{center}
 
 The last line of the filetable will have a newline as well.  This is followed
 by the server terminating the connection.
