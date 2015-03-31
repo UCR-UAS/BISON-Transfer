@@ -6,6 +6,7 @@
 % =============================================================================
 
 \documentclass[12pt]{article}
+\usepackage[American]{babel}
 \usepackage{parskip}
 \usepackage{fullpage}
 \usepackage{graphicx}
@@ -17,6 +18,7 @@
 \usepackage{dingbat}
 \usepackage{float}
 \usepackage[framemethod=tikz]{mdframed}
+\usepackage{todonotes}
 
 \mdfdefinestyle{IEEEBlueStyle}{roundcorner=10pt, tikzsetting={draw=cyan, line width=1pt}}
 
@@ -69,13 +71,8 @@ or \hyperref[sec:recalculate_MD5]
 \section{Transfer Modes}
 \label{sec:transfer_modes}
 There are four transfer modes that have been (or will be) implemented.
-<<<<<<< HEAD
 These are presented in tabular form in \ref{fig:transfer_modes}.
 \begin{figure}[H]
-=======
-These are presented in tabular form in figure below.
-\begin{figure}[h!]
->>>>>>> parent of ac2fbee... Made changes to specs.tex comitted.
 	\centering
 	\begin{tabular}{r l}
 		\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
@@ -101,21 +98,12 @@ the corresponding filename that is going to be transferred.
 \subsection{File Request}
 \label{sec:request_file}
 The file request mode is signified by the client querying the server for the
-<<<<<<< HEAD
 file by providing the command in figure~\ref{fig:request_file}.
 \begin{figure}[H]
 	\centering
 	\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
 	\caption{Request File Mode}
 	\label{fig:request_file}
-=======
-file by providing the following line.
-
-\begin{figure}{h!}
-	\centering
-	\verb+REQ:+\textvisiblespace <filename>\carriagereturn\carriagereturn
-	\label{Request File Mode}
->>>>>>> parent of ac2fbee... Made changes to specs.tex comitted.
 \end{figure}
 
 The server, after recieving this line, will provide the corresponding file in
@@ -124,7 +112,6 @@ unencrypted binary over the port.
 \subsection{Filetable Request}
 \label{sec:request_filetable}
 The client requests the filetable using the following line:
-<<<<<<< HEAD
 \begin{figure}[H]
 	\centering
 	\verb+FTREQ+\carriagereturn\carriagereturn
@@ -141,23 +128,6 @@ newlines in their names.  The format is provided in figure~
 	\textvisiblespace<filename>\carriagereturn
 	\caption{MD5 Sum and Filename Specification}
 	\label{fig:mdfive_format}
-=======
-
-\begin{figure}{h!}
-	\centering
-	\verb+FTREQ+\carriagereturn\carriagereturn
-	\label{Filetable Request Mode}
-\end{figure}
-
-The filetable format is done by line, and files are not expected to have
-newlines in their names.
-
-\begin{figure}{h!}
-	\centering
-	<MD5 SUM (32 hex-representing ASCII characters)>\textvisiblespace
-	\textvisiblespace<filename>\carriagereturn
-	\label{MD5 Sum and Filename Specification}
->>>>>>> parent of ac2fbee... Made changes to specs.tex comitted.
 \end{figure}
 
 The last line of the filetable will have a newline as well.  This is followed
@@ -169,19 +139,11 @@ Ideally, this specific transfer mode is never used because it signifies an
 error either in transmitting the filetable or calculating the
 \href{http://en.wikipedia.org/wiki/Md5sum}{MD5 Sum} on the transfer server.
 The client requests a filetable recalculation using the following line:
-<<<<<<< HEAD
 \begin{figure}[H]
 	\centering
 	\verb+RECALC:+\textvisiblespace <filename>\carriagereturn\carriagereturn
 	\caption{Request Recalculation}
 	\label{fig:recalculate_request}
-=======
-
-\begin{figure}{h!}
-	\centering
-	\verb+RECALC:+\textvisiblespace <filename>\carriagereturn\carriagereturn
-	\label{Request Recalculation}
->>>>>>> parent of ac2fbee... Made changes to specs.tex comitted.
 \end{figure}
 
 This makes the server recalculate the MD5 sum of a specific file and not the
@@ -194,7 +156,7 @@ Ideally, a solution to this would be to recalculate the MD5 sum when the
 ``mtime'' of a file is changed.
 
 \section{Client State Machines}
-To be written.
+\todo{To be written.}
 
 \section{Security}
 \label{sec:security}
@@ -202,9 +164,9 @@ In a closed-system, security is not generally considered for simplicity sake.
 This is not a system designed for large-scale deployment by any means.
 It is designed to work for its designated purpose, and only that purpose.
 Any other use of it is probably unsafe, and the author does not have grandiose
-visions of the software's use anywhere other than transferring volume-trivial
-files such as the images acquired from an unmanned aerial vehicle built by
-students from UCR.
+visions of the software's use anywhere other than transferring trivial (by
+volume) files such as the images acquired from an unmanned aerial vehicle
+built by students from UCR.
 
 But considering security for the heck of it is an interesting topic in general.
 This is especially true when it comes to code-masochists like the author.
