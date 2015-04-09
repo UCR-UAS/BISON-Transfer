@@ -1,6 +1,6 @@
 CPP=g++
 CPPFLAGS=-Wall -ggdb `pkg-config --cflags --libs openssl` -std=c++0x `pkg-config --libs yaml-cpp` -lboost_filesystem -lboost_system -iquote inc/
-BINARY_DIR=bin/
+BINARY_DIR=usr/bin/
 INCLUDE_DIR=inc/
 SOURCES=BISON-Transferd.cpp BISON-Transfer.cpp
 SOURCES_DIR=src/

@@ -1,7 +1,7 @@
 /* Copyright (c) 2014 UCR-UAS
  * You should have recieved a copy of the MIT license with this file.
  * Engineer: Brandon Lu
- * Description: This is the BISON-Transfer server version 1.
+ * Description: This is the BISON-Transfer server version.
  * What dose it do?  Tarring and insanity.
  * This is indeed a child-processed server.
  */

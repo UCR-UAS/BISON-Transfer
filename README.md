@@ -52,11 +52,11 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * Implement timeouts
- * Implement returned exceptions
  * REALTIME mode implementation
+ * Implement returned exceptions (C error handling)
  * Preforking and other client-handling insanity
  * -HUP reload (test not done, should be done in server)
+ * Innotify directory md5sum recalculation
  * Robustness improvements
  * Loglevel improments
  * Further testing

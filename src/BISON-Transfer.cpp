@@ -2,7 +2,6 @@
  * You should have recieved a copy of the MIT licence with this file.
  * Engineer: Brandon Lu
  * Description: This is the BISON-Transfer client version 1.
- * What dose it do? Un-tarring and insanity.
  * This is not a multi-threaded client.
  */
 
@@ -190,6 +189,7 @@ void handle_connection(action_t &action)
 			}
 
 			// Write the data into the output file which was opened earlier.
+			bool delete_flag = false;
 			char buf[MAXBUFLEN + 1];
 			int len = 0;
             // file descriptor set for writing to file
@@ -200,8 +200,15 @@ void handle_connection(action_t &action)
             timeout.tv_usec = 0;
 			while(select(sfd+1, &set, NULL, NULL, &timeout) != 0) {
                 len = read(sfd, buf, MAXBUFLEN);
-                if (len == 0)
+                if (len == 0)					// reached end of file
                     break;
+				if (len == -1) {				// error condition
+					std::cerr << "Error on socket read from client."
+						<< strerror(errno) << std::endl;
+					errno = 0;
+					delete_flag = true;
+					break;
+				}
 				fwrite(buf, sizeof(char), len, output_file);
                 timeout.tv_sec = 30;
                 timeout.tv_usec = 0;
@@ -209,6 +216,11 @@ void handle_connection(action_t &action)
 
 			// Close the file, of course.
 			fclose(output_file);
+
+			// Delete the file if necessary
+			if (delete_flag == true) {
+				std::cerr << "Deleting error'd file." << std::endl;
+			}
 		}	break;
 
 		case FILETABLE:
