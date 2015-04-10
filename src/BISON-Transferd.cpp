@@ -10,6 +10,7 @@
 // Read the Trello cards.  (You can be added if you ask!)
 
 // =============== Includes ===============
+#include <arpa/inet.h>
 #include "BISON-Defaults.h"
 #include <boost/circular_buffer.hpp>
 #include <boost/filesystem.hpp>
@@ -79,8 +80,8 @@ void configure_server(YAML::Node &config)
 		config["BISON-Transfer"]["Server"]["Error-Wait"] = DEF_ERROR_WAIT;
 
 	// set file variables to the yaml configuration variables
-	std::string BISON_TRANSMIT_MODE =
-		config["BISON-Transfer"]["Server"]["Transmit-Mode"].as<std::string>;
+	std::string BISON_TRANSMIT_MODE
+		= config["BISON-Transfer"]["Server"]["Transmit-Mode"].as<std::string>();
 	BISON_TRANSFER_ADDRESS
 		= config["BISON-Transfer"]["Server"]["Bind-Address"].as<std::string>();
 	BISON_TRANSFER_PORT = config["BISON-Transfer"]["Server"]["Port"].as<int>();
@@ -99,10 +100,10 @@ void configure_server(YAML::Node &config)
 		std::cout << "Transmitting: " << BISON_TRANSFER_DIR << std::endl;
 	}
 
-	if (strcmp(BISON_TRANSMIT_MODE, "REALTIME") == 0) {
+	if (strcmp(BISON_TRANSMIT_MODE.c_str(), "REALTIME") == 0) {
 		BISON_TRANSMIT_REALTIME = true;
 		std::cout << "Transmitting realtime." << std::endl;
-	} else if (strcmp(BISON_TRANSMIT_MODE, "QUEUE") == 0) {
+	} else if (strcmp(BISON_TRANSMIT_MODE.c_str(), "QUEUE") == 0) {
 		
 	}
 
@@ -135,14 +136,11 @@ int prepare_connection()
 	// set things for bind
 	memset (&my_addr, 0, sizeof(struct sockaddr));
 	my_addr.sin_family = AF_INET;
-	my_addr.sin_addr.s_addr = inet_addr(BISON_TRANSFER_ADDRESS);
-	my_addr.sin_port = htons(BISON_TRANSFER_PORT);
-
-	if (my_addr.sin_addr.s_addr == -1) {
-		std::cerr << "Could not convert input address." << std::endl;
+	if (inet_aton(BISON_TRANSFER_ADDRESS.c_str(), &my_addr.sin_addr) == 0) {
+		std::cerr << "Could not parse bind address." << std::endl;
 		exit(1);
 	}
-
+	my_addr.sin_port = htons(BISON_TRANSFER_PORT);
 	if (my_addr.sin_port == -1) {
 		std::cerr << "Could not convert input port." << std::endl;
 		exit(1);
