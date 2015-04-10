@@ -52,14 +52,15 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
- * REALTIME mode implementation
+ * PID file handling
  * Loglevels
- * Implement returned exceptions (C error handling)
- * Preforking and other client-handling insanity
  * -HUP reload (test not done, should be done in server)
+ * Implement returned exceptions (C error handling)
+ * Implement innotify directory change filetable update
+ * REALTIME mode implementatio				On holdback because communication
+ * Preforking and other client-handling insanity
  * Innotify directory md5sum recalculation
  * Robustness improvements
- * Loglevel improments
  * Further testing
  * Documentation and insanity (mostly documentation)
 
@@ -67,8 +68,11 @@ Preforking and other client-handling insanity
 ---------------------------------------------
  * Corrupt file handling implementation improvement
  * Minimum server number
- * Move filetable handling to client
  * Maximum connections before quit on forked
+
+Documentation and insanity
+--------------------------
+ * Document configuration files (more or less under development at the moment.)
 
 How to use BISON Transfer in its preliminary standalone mode
 ------------------------------------------------------------

@@ -11,6 +11,7 @@
 const char __DEF_SERVER_CONFIG_PATH__[] = "etc/BISON/";
 const char __DEF_SERVER_CONFIG_FILE__[] = "transfer_server_config.yaml";
 const char DEF_TRANSMIT_DIR[] = "var/run/BISON/transmit/";
+const char DEF_TRANSMIT_PID_FILE[] = "var/run/BISON/transferd.pid";
 const char DEF_BISON_TRANSMIT_MODE[] = "QUEUE";
 											// only two valid modes: QUEUE,
 											// REALTIME

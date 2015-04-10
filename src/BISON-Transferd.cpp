@@ -64,31 +64,32 @@ void configure_server(YAML::Node &config)
 	}
 
 	// configure with the default settings if the values do not exist
-	if (!config["BISON-Transfer"]["Server"]["Transmit-Mode"])
-		config["BISON-Transfer"]["Server"]["Transmit-Mode"]
-			= DEF_BISON_TRANSMIT_MODE;
-	if (!config["BISON-Transfer"]["Server"]["Bind-Address"])
-		config["BISON-Transfer"]["Server"]["Bind-Address"] 
-			= DEF_BISON_TRANSFER_BIND;
-	if (!config["BISON-Transfer"]["Server"]["Port"])
-		config["BISON-Transfer"]["Server"]["Port"] = DEF_BISON_TRANSFER_PORT;
-	if (!config["BISON-Transfer"]["Server"]["Max-Backlog"])
-		config["BISON-Transfer"]["Server"]["Max-Backlog"] = DEF_MAX_BACKLOG;
-	if (!config["BISON-Transfer"]["Server"]["Transmit-Dir"])
-		config["BISON-Transfer"]["Server"]["Transmit-Dir"] = DEF_TRANSMIT_DIR;
-	if (!config["BISON-Transfer"]["Server"]["Error-Wait"])
-		config["BISON-Transfer"]["Server"]["Error-Wait"] = DEF_ERROR_WAIT;
+	YAML::Node xferConfig = config["BISON-Transfer"]["Server"];
+	if (!xferConfig["PID-File"])
+		xferConfig["PID-File"] = DEF_TRANSMIT_PID_FILE;
+	if (!xferConfig["Transmit-Mode"])
+		xferConfig["Transmit-Mode"] = DEF_BISON_TRANSMIT_MODE;
+	if (!xferConfig["Bind-Address"])
+		xferConfig["Bind-Address"] = DEF_BISON_TRANSFER_BIND;
+	if (!xferConfig["Port"])
+		xferConfig["Port"] = DEF_BISON_TRANSFER_PORT;
+	if (!xferConfig["Max-Backlog"])
+		xferConfig["Max-Backlog"] = DEF_MAX_BACKLOG;
+	if (!xferConfig["Transmit-Dir"])
+		xferConfig["Transmit-Dir"] = DEF_TRANSMIT_DIR;
+	if (!xferConfig["Error-Wait"])
+		xferConfig["Error-Wait"] = DEF_ERROR_WAIT;
 
 	// set file variables to the yaml configuration variables
 	std::string BISON_TRANSMIT_MODE
-		= config["BISON-Transfer"]["Server"]["Transmit-Mode"].as<std::string>();
+		= xferConfig["Transmit-Mode"].as<std::string>();
 	BISON_TRANSFER_ADDRESS
-		= config["BISON-Transfer"]["Server"]["Bind-Address"].as<std::string>();
-	BISON_TRANSFER_PORT = config["BISON-Transfer"]["Server"]["Port"].as<int>();
-	MAX_BACKLOG = config["BISON-Transfer"]["Server"]["Max-Backlog"].as<int>();
+		= xferConfig["Bind-Address"].as<std::string>();
+	BISON_TRANSFER_PORT = xferConfig["Port"].as<int>();
+	MAX_BACKLOG = xferConfig["Max-Backlog"].as<int>();
 	BISON_TRANSFER_DIR 
-		= config["BISON-Transfer"]["Server"]["Transmit-Dir"].as<std::string>();
-	ERROR_WAIT = config["BISON-Transfer"]["Server"]["Error-Wait"].as<int>();
+		= xferConfig["Transmit-Dir"].as<std::string>();
+	ERROR_WAIT = xferConfig["Error-Wait"].as<int>();
 
 	// if we are debugging, output the debug information
 	if (DEBUG) {
