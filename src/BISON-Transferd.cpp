@@ -38,6 +38,7 @@
 // ===== Terrible global variables  ========
 int sfd;
 int MAX_BACKLOG;
+bool BISON_TRANSMIT_REALTIME;
 std::string BISON_TRANSFER_ADDRESS;
 int BISON_TRANSFER_PORT;
 std::string BISON_TRANSFER_DIR;
@@ -62,8 +63,11 @@ void configure_server(YAML::Node &config)
 	}
 
 	// configure with the default settings if the values do not exist
-	if (!config["BISON-Transfer"]["Server"]["Bind-address"])
-		config["BISON-Transfer"]["Server"]["Bind-address"] 
+	if (!config["BISON-Transfer"]["Server"]["Transmit-Mode"])
+		config["BISON-Transfer"]["Server"]["Transmit-Mode"]
+			= DEF_BISON_TRANSMIT_MODE;
+	if (!config["BISON-Transfer"]["Server"]["Bind-Address"])
+		config["BISON-Transfer"]["Server"]["Bind-Address"] 
 			= DEF_BISON_TRANSFER_BIND;
 	if (!config["BISON-Transfer"]["Server"]["Port"])
 		config["BISON-Transfer"]["Server"]["Port"] = DEF_BISON_TRANSFER_PORT;
@@ -75,8 +79,10 @@ void configure_server(YAML::Node &config)
 		config["BISON-Transfer"]["Server"]["Error-Wait"] = DEF_ERROR_WAIT;
 
 	// set file variables to the yaml configuration variables
+	std::string BISON_TRANSMIT_MODE =
+		config["BISON-Transfer"]["Server"]["Transmit-Mode"].as<std::string>;
 	BISON_TRANSFER_ADDRESS
-		= config["BISON-Transfer"]["Server"]["Bind-address"].as<std::string>();
+		= config["BISON-Transfer"]["Server"]["Bind-Address"].as<std::string>();
 	BISON_TRANSFER_PORT = config["BISON-Transfer"]["Server"]["Port"].as<int>();
 	MAX_BACKLOG = config["BISON-Transfer"]["Server"]["Max-Backlog"].as<int>();
 	BISON_TRANSFER_DIR 
@@ -85,11 +91,19 @@ void configure_server(YAML::Node &config)
 
 	// if we are debugging, output the debug information
 	if (DEBUG) {
+		std::cout << "Transmit mode:" << BISON_TRANSMIT_MODE << std::endl;
 		std::cout << "Transfer Address (for binding): "
 			<< BISON_TRANSFER_ADDRESS << std::endl;
 		std::cout << "Transfer port: " << BISON_TRANSFER_PORT << std::endl;
 		std::cout << "Max Backlog: " << MAX_BACKLOG << std::endl;
 		std::cout << "Transmitting: " << BISON_TRANSFER_DIR << std::endl;
+	}
+
+	if (strcmp(BISON_TRANSMIT_MODE, "REALTIME") == 0) {
+		BISON_TRANSMIT_REALTIME = true;
+		std::cout << "Transmitting realtime." << std::endl;
+	} else if (strcmp(BISON_TRANSMIT_MODE, "QUEUE") == 0) {
+		
 	}
 
 #if DEBUG
@@ -121,7 +135,18 @@ int prepare_connection()
 	// set things for bind
 	memset (&my_addr, 0, sizeof(struct sockaddr));
 	my_addr.sin_family = AF_INET;
+	my_addr.sin_addr.s_addr = inet_addr(BISON_TRANSFER_ADDRESS);
 	my_addr.sin_port = htons(BISON_TRANSFER_PORT);
+
+	if (my_addr.sin_addr.s_addr == -1) {
+		std::cerr << "Could not convert input address." << std::endl;
+		exit(1);
+	}
+
+	if (my_addr.sin_port == -1) {
+		std::cerr << "Could not convert input port." << std::endl;
+		exit(1);
+	}
 
 	// bind
 #if DEBUG
