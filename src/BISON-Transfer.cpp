@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include "filetable.h"
 #include <vector>
+#include <list>
 #include <yaml-cpp/yaml.h>
 
 typedef enum {FILETABLE, TRANSFER, REALTIME, RECALCULATE_MD5} action_t;
@@ -45,7 +46,7 @@ int BISON_TRANSFER_PORT;
 std::string BISON_RECIEVE_DIR;
 int ERROR_WAIT;
 std::queue<std::string> filequeue;
-std::queue<std::string> recalc_queue;
+std::queue<std::string, std::list<std::string>> recalc_queue;
 std::map<std::string, std::vector<unsigned char>> filetable;
 YAML::Node config;
 
