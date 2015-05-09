@@ -121,7 +121,7 @@ void error_terminate(const int status) {
 void handle_connection(action_t &action)
 {
 #if DEBUG
-	printf("Socketing... \n");
+	// printf("Socketing... \n");
 #endif // if DEBUG
 	sfd = socket(PF_INET, SOCK_STREAM, 0);
 	if (sfd == -1) {
@@ -141,7 +141,7 @@ void handle_connection(action_t &action)
 	}
 
 #if DEBUG
-	printf("Connecting... \n");
+	// printf("Connecting... \n");
 #endif // if DEBUG
 	if (connect(sfd, (struct sockaddr*) &srv_addr,
 		sizeof(struct sockaddr_in)) == -1) {
