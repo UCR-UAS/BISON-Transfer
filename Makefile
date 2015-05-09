@@ -12,7 +12,7 @@ EXECUTABLES=$(addprefix $(BINARY_DIR),$(SOURCES:.cpp= ))
 all: $(BINARY_DIR) $(EXECUTABLES) specs.pdf
 
 $(BINARY_DIR):
-	mkdir $(BINARY_DIR)
+	mkdir -p $(BINARY_DIR)
 
 $(BINARY_DIR)%: $(SOURCES_DIR)%.cpp $(INCLUDES)
 	$(CPP) $(CPPFLAGS) $< -o $@
@@ -24,5 +24,6 @@ specs.pdf: specs.tex
 	rm specs.aux specs.log specs.toc specs.out
 
 clean:
-	rm -r $(BINARY_DIR) 
+	rm -r $(BINARY_DIR)
+	rm -r usr/
 
