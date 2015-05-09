@@ -288,9 +288,9 @@ void handle_connection(action_t &action)
 		{
 			// Oh, we're in trouble.  We need to recalculate a faulty MD5 sum.
 			std::cout << "Recalculating for "
-				<< recalc_queue.front().c_str() << std::endl;
+				<< recalc_queue.front() << std::endl;
 			// Get the file that we need to recalculate
-			std::string filenam(recalc_queue.front().c_str());
+			std::string filenam(recalc_queue.front());
 			recalc_queue.pop();
 
 			// Tell the server to recalculate it.
