@@ -196,6 +196,8 @@ void child_function(int cfd)
 			break;
 		case SEND:
 		{
+		/* Consider this: what if the server does not have the file? TODO
+*/
 			FILE *send_me = fopen((BISON_TRANSFER_DIR + filename).c_str(), "r");
 			if (!send_me)
 			   error("Could not open file for reading.");

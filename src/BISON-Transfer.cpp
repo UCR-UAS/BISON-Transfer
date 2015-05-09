@@ -286,7 +286,8 @@ void handle_connection(action_t &action)
 		case RECALCULATE_MD5:
 		{
 			// Oh, we're in trouble.  We need to recalculate a faulty MD5 sum.
-
+			std::cout << "Recalculating for"
+				<< recalc_queue.front() << std::endl;
 			// Get the file that we need to recalculate
 			std::string filename = recalc_queue.front();
 			recalc_queue.pop();
