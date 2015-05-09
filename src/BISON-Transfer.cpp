@@ -289,7 +289,7 @@ void handle_connection(action_t &action)
 			std::cout << "Recalculating for "
 				<< recalc_queue.front() << std::endl;
 			// Get the file that we need to recalculate
-			std::string filenam(recalc_queue.front());
+			std::string filenam(recalc_queue.front().c_str());
 			recalc_queue.pop();
 
 			// Tell the server to recalculate it.
