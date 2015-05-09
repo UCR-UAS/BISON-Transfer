@@ -150,16 +150,16 @@ void handle_connection(action_t &action)
 		return;
 	}
 
-	if (filequeue.empty()) {
-		std::cout << "Filequeue is empty.  Checking for new files."
-			<< std::endl;
-		action = FILETABLE;
-	}
-
 	if (!recalc_queue.empty()) {
 		std::cout << "Recalculation queue is not empty. Relaying filenames."
 			<< std::endl;
 		action = RECALCULATE_MD5;
+	}
+
+	if (filequeue.empty()) {
+		std::cout << "Filequeue is empty.  Checking for new files."
+			<< std::endl;
+		action = FILETABLE;
 	}
 
 	switch (action) {
