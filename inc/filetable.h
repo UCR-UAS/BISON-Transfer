@@ -45,8 +45,7 @@ const char *recalculate_MD5(const std::string path, const std::string &name,
 	if(!MD5_Final(sum.data(), &md5_structure))
 		return "Could not generate final MD5 checksum";
 
-	filetable.insert(std::pair<std::string, std::vector<unsigned char>>
-		(name, sum));
+	filetable[name]=(sum);
 
 	return 0;
 }

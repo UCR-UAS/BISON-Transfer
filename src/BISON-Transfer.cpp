@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include "filetable.h"
 #include <vector>
+#include <list>
 #include <yaml-cpp/yaml.h>
 
 typedef enum {FILETABLE, TRANSFER, REALTIME, RECALCULATE_MD5} action_t;
@@ -156,7 +157,7 @@ void handle_connection(action_t &action)
 		action = RECALCULATE_MD5;
 	}
 
-	if (filequeue.empty()) {
+	if (filequeue.empty() && action != RECALCULATE_MD5) {
 		std::cout << "Filequeue is empty.  Checking for new files."
 			<< std::endl;
 		action = FILETABLE;
@@ -272,8 +273,8 @@ void handle_connection(action_t &action)
 				// handle incorrect / incomplete files
 				if (it2->second != it->second) {
 					std::cout << "Corrupt file: " << it->first << std::endl;
-					recalc_queue.push(it->first);
-					filequeue.push(it->first);
+					recalc_queue.emplace(it->first);
+					filequeue.emplace(it->first);
 					continue;
 				}
 			}
@@ -297,6 +298,10 @@ void handle_connection(action_t &action)
 
 			// And recalculate it ourselves.
 			recalculate_MD5(BISON_RECIEVE_DIR, filenam, filetable);
+
+			if (recalc_queue.empty())
+					action = TRANSFER;
+
 		}	break;
 	}
 	close(sfd);
@@ -331,6 +336,7 @@ int main (int argc, char *argv[])
 	dirChkCreate(BISON_RECIEVE_DIR.c_str(), "recieve");
 
 	printf("Client Starting Up...\n");
+
 	action_t action = FILETABLE;
 
 	while(1) {
