@@ -236,7 +236,7 @@ void handle_connection()
 	if (pid == 0) {							// we are the child.
 		child_function(cfd);
 		printf("Spawned child exiting.\n");
-		while(read(cfd, &c, 1) != 0);
+		while(read(cfd, &c, 1) > 0);
 		std::cout << "Connection reading..." << std::endl;
 		close(cfd);
 		std::cout << "Connection closed." << std::endl;
