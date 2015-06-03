@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+
+extern int sfd;
+
+
 // ========= Filetable Generation =========
 const char *recalculate_MD5(const std::string path, const std::string &name,
 	std::map<std::string, std::vector<unsigned char>> &filetable)
@@ -100,6 +104,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 			// check for premature newlines (filename should -
 			// be at least one character long)
 			if (i != 34) {
+				close(sfd);
 				throw(5);
 			}
 
@@ -115,6 +120,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 		// throw an exception if this was supposed to -
 		// mark a termination but did not
 		if (termState)
+			close(sfd);
 			throw(7);
 
 		// first 32 characters are md5 sum.
@@ -130,6 +136,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 				} else if (c >= '0' && c <= '9') {
 					tmp += (c - '0') << 4;
 				} else {
+					close(sfd);
 					throw(2);
 				}
 				// increment i for next character
@@ -144,6 +151,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 				} else if (c >= '0' && c <= '9') {
 					tmp += (c - '0');
 				} else {
+					close(sfd);
 					throw(2);
 				}
 				// increment i and take care of sum
@@ -154,6 +162,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 		} else if (i >= 32 && i <= 33) {
 			// check if spaces
 			if (c != ' ')
+				close(sfd);
 				throw(4);
 			++i;
 			continue;
@@ -167,6 +176,7 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 	if (!termState) {
 		std::cerr << "Parsing did not complete successfully."
 			<< " Unexpected termination." << std::endl;
+		close(sfd);
 		exit(1);
 	}
 }
