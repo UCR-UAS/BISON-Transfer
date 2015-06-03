@@ -119,9 +119,10 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 
 		// throw an exception if this was supposed to -
 		// mark a termination but did not
-		if (termState)
+		if (termState) {
 			close(sfd);
 			throw(7);
+		}
 
 		// first 32 characters are md5 sum.
 		if (i < 32) {
