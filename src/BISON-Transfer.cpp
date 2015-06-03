@@ -304,6 +304,8 @@ void handle_connection(action_t &action)
 
 		}	break;
 	}
+	shutdown(sfd, SHUT_RDWR);
+	while(read(sfd, 0, 0));
 	close(sfd);
 }
 
