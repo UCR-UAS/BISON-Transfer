@@ -305,9 +305,12 @@ void handle_connection(action_t &action)
 		}	break;
 	}
 	shutdown(sfd, SHUT_WR);
+	std::cout << "Connection shutdown" << std::endl;
 	char c;
 	while(read(sfd, &c, 1) == 0);
+	std::cout << "Connection end reading" << std::endl;
 	close(sfd);
+	std::cout << "Connection closed" << std::endl;
 }
 
 // ======= Configuration Reloading ========

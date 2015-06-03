@@ -235,8 +235,11 @@ void handle_connection()
 		child_function(cfd);
 		printf("Spawned child exiting.\n");
 		shutdown(cfd, SHUT_WR);
+		std::cout << "Connection shutdown." << std::endl;
 		while(read(sfd, &c, 1) == 0)
+		std::cout << "Connection read." << std::endl;
 		close(cfd);
+		std::cout << "Connection closed." << std::endl;
 		exit(0);
 	} else {								// we are the parent
 		close(cfd);							// the child handles this
