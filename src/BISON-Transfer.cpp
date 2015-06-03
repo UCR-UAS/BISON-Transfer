@@ -308,7 +308,7 @@ void handle_connection(action_t &action)
 	std::cout << "Connection shutdown" << std::endl;
 	char c;
 	while(read(sfd, &c, 1) == 0);
-	std::cout << "Connection end reading" << std::endl;
+	std::cout << "Connection read" << std::endl;
 	close(sfd);
 	std::cout << "Connection closed" << std::endl;
 }
