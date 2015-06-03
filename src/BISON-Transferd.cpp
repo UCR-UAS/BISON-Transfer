@@ -234,10 +234,8 @@ void handle_connection()
 	if (pid == 0) {							// we are the child.
 		child_function(cfd);
 		printf("Spawned child exiting.\n");
-		shutdown(cfd, SHUT_WR);
+		shutdown(cfd, SHUT_RDWR);
 		std::cout << "Connection shutdown." << std::endl;
-		while(read(cfd, &c, 1) == 0);
-		std::cout << "Connection read." << std::endl;
 		close(cfd);
 		std::cout << "Connection closed." << std::endl;
 		exit(0);
