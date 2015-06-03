@@ -190,6 +190,8 @@ void child_function(int cfd)
 	action_t action;
 	std::string filename;
 	parse_command(cfd, action, filename);
+	shutdown(cfd, SHUT_RD);
+	std::cout << "Shut down for reading.." << std::endl;
 	switch (action) {
 		case NONE:
 			std::cerr << "Defunct client found." << std::endl;
@@ -234,9 +236,7 @@ void handle_connection()
 	if (pid == 0) {							// we are the child.
 		child_function(cfd);
 		printf("Spawned child exiting.\n");
-		shutdown(cfd, SHUT_WR);
-		std::cout << "Connection shutdown." << std::endl;
-		while(read(cfd, &c, 1) == 0);
+		while(read(cfd, &c, 1) != 0);
 		std::cout << "Connection reading..." << std::endl;
 		close(cfd);
 		std::cout << "Connection closed." << std::endl;
