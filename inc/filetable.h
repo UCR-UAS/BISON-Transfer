@@ -162,9 +162,10 @@ void md5_parse(int sfd, std::map<std::string, std::vector<unsigned char>>
 		// next two characters are spaces.
 		} else if (i >= 32 && i <= 33) {
 			// check if spaces
-			if (c != ' ')
+			if (c != ' ') {
 				close(sfd);
 				throw(4);
+			}
 			++i;
 			continue;
 			// everything else is part of the filename
