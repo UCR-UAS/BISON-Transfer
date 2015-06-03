@@ -234,7 +234,7 @@ void handle_connection()
 	if (pid == 0) {							// we are the child.
 		child_function(cfd);
 		printf("Spawned child exiting.\n");
-		shutdown(cfd, SHUT_RDWR);
+		shutdown(cfd, SHUT_WR);
 		while(read(sfd, &c, 1) == 0)
 		close(cfd);
 		exit(0);
