@@ -12,9 +12,6 @@
 #include <string>
 #include <string.h>
 
-extern int sfd;
-
-
 // ========= Filetable Generation =========
 const char *recalculate_MD5(const std::string path, const std::string &name,
 	std::map<std::string, std::vector<unsigned char>> &filetable)
