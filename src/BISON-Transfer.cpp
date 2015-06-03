@@ -178,6 +178,9 @@ void handle_connection(action_t &action)
 			filequeue.pop();				// remove front member
 			// Tell the server exactly what we want.
 			dprintf(sfd, "REQ: %s\n\n", filename.c_str());
+
+			shutdown(sfd, SHUT_WR);
+
 			// Open the file that we want to put it in.
 			FILE *output_file = fopen((BISON_RECIEVE_DIR + filename).c_str(),
 				"w");
@@ -244,6 +247,9 @@ void handle_connection(action_t &action)
 			// Ask the server for its file table.
 			// (What is this?  A date? -- Brandon)
 			dprintf(sfd, "FTREQ\n\n");
+
+			shutdown(sfd, SHUT_WR);
+
 			std::map<std::string, std::vector<unsigned char>> tmp_filetable;
 
 			// Parse the filetable information.
@@ -296,6 +302,8 @@ void handle_connection(action_t &action)
 			// Tell the server to recalculate it.
 			dprintf(sfd, "RECALC: %s\n\n", filenam.c_str());
 
+			shutdown(sfd, SHUT_WR);
+
 			// And recalculate it ourselves.
 			recalculate_MD5(BISON_RECIEVE_DIR, filenam, filetable);
 
@@ -304,8 +312,9 @@ void handle_connection(action_t &action)
 
 		}	break;
 	}
-	shutdown(sfd, SHUT_RDWR);
-	std::cout << "Connection shutdown" << std::endl;
+	char c;
+	while(read(sfd, &c, 1)>0);
+	std::cout << "Read done." << std::endl;
 	close(sfd);
 	std::cout << "Connection closed" << std::endl;
 }
