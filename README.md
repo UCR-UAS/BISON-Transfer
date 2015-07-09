@@ -52,10 +52,10 @@ transfer server daemon to reload its files.
 
 TODO List (by order of implementation)
 ---------------------------------------
+ * Implement returned exceptions (C error handling)
  * PID file handling
  * Loglevels
  * -HUP reload (test not done, should be done in server)
- * Implement returned exceptions (C error handling)
  * Implement innotify directory change filetable update
  * REALTIME mode implementatio				On holdback because communication
  * Preforking and other client-handling insanity
